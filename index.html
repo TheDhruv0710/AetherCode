@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherCode - AI Code Reviewer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/fold/foldgutter.min.css">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="particles"></div>
+    </div>
+
+    <header>
+        <div class="logo">
+            <span class="logo-text">AetherCode</span>
+            <span class="logo-glow"></span>
+        </div>
+        <div class="typing-container">
+            <span id="typing-text"></span>
+            <span class="cursor"></span>
+        </div>
+    </header>
+
+    <main>
+        <div class="main-content">
+            <section class="code-section">
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <h2>Code Editor</h2>
+                        <div class="editor-controls">
+                            <select id="language-select" class="language-dropdown">
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                                <option value="java">Java</option>
+                                <option value="csharp">C#</option>
+                                <option value="cpp">C++</option>
+                                <option value="php">PHP</option>
+                                <option value="ruby">Ruby</option>
+                                <option value="go">Go</option>
+                                <option value="swift">Swift</option>
+                                <option value="kotlin">Kotlin</option>
+                                <option value="rust">Rust</option>
+                                <option value="html">HTML</option>
+                                <option value="css">CSS</option>
+                                <option value="sql">SQL</option>
+                                <option value="typescript">TypeScript</option>
+                            </select>
+                            <button id="format-btn" class="control-button">
+                                <i class="fas fa-indent"></i> Format Code
+                            </button>
+                            <button id="clear-btn" class="control-button">
+                                <i class="fas fa-eraser"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div id="code-mirror-editor"></div>
+                    <div class="editor-footer">
+                        <div class="file-upload">
+                            <label for="file-input" class="upload-label">
+                                <i class="fas fa-upload"></i> Upload File
+                            </label>
+                            <input type="file" id="file-input" class="file-input" />
+                        </div>
+                        <div class="editor-actions">
+                            <button id="run-button" class="run-button">
+                                <i class="fas fa-play"></i> Run Code
+                            </button>
+                        </div>
+                        <div class="custom-file-wrapper">
+                            <label for="code-file-input" class="custom-file-input">
+                                <i class="fas fa-file-code"></i> Choose File
+                            </label>
+                            <input type="file" id="code-file-input" accept=".js,.py,.java,.html,.css,.cpp,.c,.rb,.go,.ts,.php">
+                        </div>
+                    </div>
+                    
+                    <!-- Output Window Section -->
+                    <div class="output-section">
+                        <div class="output-header">
+                            <h3>Output</h3>
+                            <div class="output-controls">
+                                <button id="clear-output" class="control-button">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="output-window" class="output-window">
+                            <pre id="output-content">// Code execution output will appear here</pre>
+                        </div>
+                        <div class="output-footer">
+                            <span id="execution-time" class="execution-time"></span>
+                            <span id="execution-status" class="execution-status"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-box" id="project-upload">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Upload Project Files</span>
+                        <p>Drag & drop multiple files/archive or click to browse</p>
+                        <label for="project-files-input" class="hidden-file-label"></label>
+                        <input type="file" id="project-files-input" multiple accept=".zip,.rar,.tar,.gz,.7z">
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+
+        <section class="chat-section">
+            <div class="chat-header">
+                <span>AI Assistant</span>
+                <div class="chat-controls">
+                    <button id="clear-chat" class="control-button">
+                        <i class="fas fa-trash"></i> Clear Chat
+                    </button>
+                    <button id="submit-code-review" class="submit-btn">
+                        <span>Submit Code for Review</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages">
+                <!-- Chat messages will be added here dynamically with typing animation -->
+            </div>
+            
+            <div class="chat-input-container">
+                <textarea id="chat-input" placeholder="Ask a question about your code..."></textarea>
+                <button class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/comment/comment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+    
+    <!-- Language modes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/swift/swift.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/xml/xml.min.js"></script>
+    
+    <!-- Application JS -->
+    <script src="js/animations.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>
