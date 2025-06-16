@@ -1,0 +1,146 @@
+2025-06-16 14:54:34,871 - app - INFO - Logger initialized
+2025-06-16 14:54:34,991 - app - INFO - AetherCode application initialized
+2025-06-16 14:54:35,016 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 14:54:35,423 - app - INFO - Logger initialized
+2025-06-16 14:54:35,439 - app - INFO - AetherCode application initialized
+2025-06-16 14:54:35,449 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 14:54:35,452 - werkzeug - INFO -  * Debugger PIN: 960-618-526
+2025-06-16 14:54:35,555 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 15:02:42,465 - werkzeug - INFO -  * Detected change in 'D:\\MyProjects\\AetherCode\\app\\routes\\main_routes.py', reloading
+2025-06-16 15:02:42,903 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 15:02:43,347 - app - INFO - Logger initialized
+2025-06-16 15:02:43,373 - app - INFO - AetherCode application initialized
+2025-06-16 15:02:43,382 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 15:02:43,385 - werkzeug - INFO -  * Debugger PIN: 960-618-526
+2025-06-16 15:02:43,489 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 15:03:00,962 - werkzeug - INFO -  * Detected change in 'D:\\MyProjects\\AetherCode\\app\\__init__.py', reloading
+2025-06-16 15:03:01,032 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 15:03:01,450 - app - INFO - Logger initialized
+2025-06-16 15:03:01,464 - app - INFO - AetherCode application initialized
+2025-06-16 15:03:01,474 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 15:03:01,477 - werkzeug - INFO -  * Debugger PIN: 960-618-526
+2025-06-16 15:03:01,583 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 15:06:06,971 - app - INFO - Logger initialized
+2025-06-16 15:06:06,982 - app - INFO - AetherCode application initialized
+2025-06-16 15:06:07,002 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 15:06:07,364 - app - INFO - Logger initialized
+2025-06-16 15:06:07,375 - app - INFO - AetherCode application initialized
+2025-06-16 15:06:07,384 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 15:06:07,387 - werkzeug - INFO -  * Debugger PIN: 960-618-526
+2025-06-16 15:06:07,496 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 15:06:27,296 - app - INFO - Logger initialized
+2025-06-16 15:06:27,308 - app - INFO - AetherCode application initialized
+2025-06-16 15:06:27,328 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 15:06:27,695 - app - INFO - Logger initialized
+2025-06-16 15:06:27,707 - app - INFO - AetherCode application initialized
+2025-06-16 15:06:27,715 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 15:06:27,718 - werkzeug - INFO -  * Debugger PIN: 960-618-526
+2025-06-16 15:06:27,830 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 15:06:56,136 - app - INFO - Logger initialized
+2025-06-16 15:06:56,148 - app - INFO - AetherCode application initialized
+2025-06-16 15:06:56,169 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 19:26:03,077 - app - INFO - Logger initialized
+2025-06-16 19:26:03,089 - app - INFO - AetherCode application initialized
+2025-06-16 19:26:03,114 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 19:26:03,503 - app - INFO - Logger initialized
+2025-06-16 19:26:03,516 - app - INFO - AetherCode application initialized
+2025-06-16 19:26:03,525 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 19:26:03,528 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 19:26:03,585 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 19:26:07,175 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:26:07] "GET / HTTP/1.1" 200 -
+2025-06-16 19:26:07,349 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:26:07] "GET /static/css/styles.css HTTP/1.1" 200 -
+2025-06-16 19:26:07,361 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:26:07] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-06-16 19:26:07,365 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:26:07] "GET /static/js/animations.js HTTP/1.1" 200 -
+2025-06-16 19:30:07,195 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:30:07] "GET / HTTP/1.1" 200 -
+2025-06-16 19:30:07,269 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:30:07] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 19:30:07,273 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:30:07] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-06-16 19:30:07,274 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:30:07] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 19:30:19,734 - app - INFO - Logger initialized
+2025-06-16 19:30:19,747 - app - INFO - AetherCode application initialized
+2025-06-16 19:30:19,766 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 19:30:20,139 - app - INFO - Logger initialized
+2025-06-16 19:30:20,150 - app - INFO - AetherCode application initialized
+2025-06-16 19:30:20,162 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 19:30:20,166 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 19:30:20,191 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 19:31:20,650 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:20] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 19:31:20,691 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:20] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-06-16 19:31:43,796 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:43] "GET / HTTP/1.1" 200 -
+2025-06-16 19:31:43,884 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:43] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 19:31:43,888 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:43] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-06-16 19:31:43,888 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:43] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 19:31:43,891 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:31:43] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-06-16 19:32:13,156 - app - INFO - Logger initialized
+2025-06-16 19:32:13,168 - app - INFO - AetherCode application initialized
+2025-06-16 19:32:13,189 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 19:32:13,550 - app - INFO - Logger initialized
+2025-06-16 19:32:13,562 - app - INFO - AetherCode application initialized
+2025-06-16 19:32:13,573 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 19:32:13,576 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 19:32:13,607 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 19:32:15,436 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:32:15] "GET / HTTP/1.1" 200 -
+2025-06-16 19:32:15,473 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:32:15] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-06-16 19:32:15,563 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:32:15] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 19:32:15,661 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:32:15] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-06-16 19:32:15,662 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:32:15] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 19:50:21,787 - app - INFO - Logger initialized
+2025-06-16 19:50:21,808 - app - INFO - AetherCode application initialized
+2025-06-16 19:50:21,840 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 19:50:22,323 - app - INFO - Logger initialized
+2025-06-16 19:50:22,355 - app - INFO - AetherCode application initialized
+2025-06-16 19:50:22,374 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 19:50:22,379 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 19:50:22,437 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 19:50:23,319 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:50:23] "GET / HTTP/1.1" 200 -
+2025-06-16 19:50:23,405 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:50:23] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-06-16 19:50:23,636 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:50:23] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 19:50:23,662 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:50:23] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-06-16 19:50:23,704 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 19:50:23] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 20:13:59,178 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:13:59] "GET / HTTP/1.1" 200 -
+2025-06-16 20:13:59,269 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:13:59] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 20:13:59,270 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:13:59] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-06-16 20:13:59,272 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:13:59] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 20:14:02,121 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:14:02] "POST /api/execute HTTP/1.1" 200 -
+2025-06-16 20:14:06,823 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:14:06] "POST /api/chat HTTP/1.1" 200 -
+2025-06-16 20:14:15,255 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:14:15] "POST /api/chat HTTP/1.1" 200 -
+2025-06-16 20:17:11,570 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:17:11] "GET / HTTP/1.1" 200 -
+2025-06-16 20:17:11,654 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:17:11] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 20:17:11,661 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:17:11] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-06-16 20:17:11,663 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:17:11] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 20:17:15,386 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:17:15] "POST /api/chat HTTP/1.1" 200 -
+2025-06-16 20:18:45,899 - werkzeug - INFO -  * Detected change in 'D:\\MyProjects\\AetherCode\\app\\services\\chat_service.py', reloading
+2025-06-16 20:18:45,971 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 20:18:46,371 - app - INFO - Logger initialized
+2025-06-16 20:18:46,388 - app - INFO - AetherCode application initialized
+2025-06-16 20:18:46,397 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 20:18:46,401 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 20:18:46,428 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 20:19:42,946 - werkzeug - INFO -  * Detected change in 'D:\\MyProjects\\AetherCode\\app\\routes\\api_routes.py', reloading
+2025-06-16 20:19:43,027 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 20:19:43,446 - app - INFO - Logger initialized
+2025-06-16 20:19:43,472 - app - INFO - AetherCode application initialized
+2025-06-16 20:19:43,482 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 20:19:43,486 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 20:19:43,518 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 20:20:35,988 - werkzeug - INFO -  * Detected change in 'D:\\MyProjects\\AetherCode\\app\\routes\\api_routes.py', reloading
+2025-06-16 20:20:36,032 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 20:20:36,462 - app - INFO - Logger initialized
+2025-06-16 20:20:36,491 - app - INFO - AetherCode application initialized
+2025-06-16 20:20:36,503 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 20:20:36,506 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 20:20:36,549 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 20:21:10,249 - app - INFO - Logger initialized
+2025-06-16 20:21:10,262 - app - INFO - AetherCode application initialized
+2025-06-16 20:21:10,284 - werkzeug - INFO -  * Restarting with stat
+2025-06-16 20:21:10,660 - app - INFO - Logger initialized
+2025-06-16 20:21:10,676 - app - INFO - AetherCode application initialized
+2025-06-16 20:21:10,683 - werkzeug - WARNING -  * Debugger is active!
+2025-06-16 20:21:10,686 - werkzeug - INFO -  * Debugger PIN: 123-626-266
+2025-06-16 20:21:10,736 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-06-16 20:21:14,171 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:14] "GET / HTTP/1.1" 200 -
+2025-06-16 20:21:14,384 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:14] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-06-16 20:21:14,386 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:14] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-06-16 20:21:14,386 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:14] "[36mGET /static/js/animations.js HTTP/1.1[0m" 304 -
+2025-06-16 20:21:18,868 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:18] "POST /api/chat HTTP/1.1" 200 -
+2025-06-16 20:21:25,769 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:25] "POST /api/generate-tests HTTP/1.1" 200 -
+2025-06-16 20:21:33,605 - werkzeug - INFO - 127.0.0.1 - - [16/Jun/2025 20:21:33] "POST /api/execute HTTP/1.1" 200 -

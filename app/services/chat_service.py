@@ -15,6 +15,7 @@ def process_chat_message(message):
         else:
             response = f"I received your message: '{message}'. How can I help you with this code?"
         
-        return {'message': response}
+        # Return response in the format expected by the frontend
+        return {'response': response}
     except Exception as e:
         return {'error': str(e)}
