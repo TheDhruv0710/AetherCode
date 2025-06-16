@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherCode - Intelligent Code Refinement</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <h1 class="title">AetherCode</h1>
+            </div>
+            <div class="animated-phrase">
+                <span class="phrase">Intelligent Code Refinement</span>
+            </div>
+        </header>
+        
+        <nav class="tab-navigation">
+            <ul>
+                <li><a href="#" class="tab-link active" data-tab="editor">Code Editor</a></li>
+                <li><a href="#" class="tab-link" data-tab="ai-reviewer">AI Reviewer</a></li>
+                <li><a href="#" class="tab-link" data-tab="tech-spec">Technical Documentation</a></li>
+                <li><a href="#" class="tab-link" data-tab="test-cases">Automated Testing</a></li>
+            </ul>
+        </nav>
+        
+        <main class="content-area">
+            <!-- Code Editor Tab -->
+            <section id="editor" class="tab-content active">
+                <div class="editor-container">
+                    <!-- GitHub Repository Integration -->
+                    <div class="github-integration">
+                        <div class="github-input-section">
+                            <div class="input-group">
+                                <label for="repo-url">GitHub Repository URL</label>
+                                <input type="text" id="repo-url" placeholder="e.g., https://github.com/owner/repo-name">
+                            </div>
+                            <div class="input-row">
+                                <div class="input-group small">
+                                    <label for="repo-branch">Branch (Optional)</label>
+                                    <input type="text" id="repo-branch" placeholder="e.g., main">
+                                </div>
+                                <div class="input-group small">
+                                    <label for="github-token">
+                                        GitHub Token (Optional)
+                                        <span class="info-icon" title="For private repositories or increased rate limits"><i class="fas fa-info-circle"></i></span>
+                                    </label>
+                                    <input type="password" id="github-token" placeholder="ghp_...">
+                                </div>
+                            </div>
+                            <button id="fetch-repo" class="btn primary-btn">
+                                <i class="fas fa-cloud-download-alt"></i> Fetch Repository
+                                <span class="spinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                            <div id="repo-status" class="status-message"></div>
+                        </div>
+                        <div id="repo-browser" class="repo-browser" style="display: none;">
+                            <div class="repo-header">
+                                <span>Current Repo: <span id="current-repo-name">None</span></span>
+                                <button id="collapse-repo" class="btn icon-btn"><i class="fas fa-chevron-up"></i></button>
+                            </div>
+                            <div id="repo-files" class="repo-files"></div>
+                        </div>
+                    </div>
+                    <div class="language-selector">
+                        <label for="language-select">Language:</label>
+                        <select id="language-select">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="csharp">C#</option>
+                            <option value="cpp">C++</option>
+                            <option value="php">PHP</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="typescript">TypeScript</option>
+                        </select>
+                    </div>
+                    <div id="code-editor"></div>
+                    <div class="editor-actions">
+                        <button id="run-code" class="btn primary-btn">
+                            <i class="fas fa-play"></i> Run Code
+                        </button>
+                        <label for="file-upload" class="btn secondary-btn">
+                            <i class="fas fa-upload"></i> Upload Code
+                            <input type="file" id="file-upload" accept=".js,.py,.java,.cs,.cpp,.php,.rb,.go,.rs,.ts">
+                        </label>
+                    </div>
+                    <div class="output-container">
+                        <div class="output-header">
+                            <h3>Output</h3>
+                            <div class="output-controls">
+                                <span id="execution-status">Ready</span>
+                                <span id="execution-time"></span>
+                                <button id="clear-output" class="btn small-btn">Clear</button>
+                            </div>
+                        </div>
+                        <div id="output-display"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- AI Reviewer Tab -->
+            <section id="ai-reviewer" class="tab-content">
+                <div class="reviewer-container">
+                    <div class="chat-container">
+                        <div id="chat-messages" class="chat-messages">
+                            <div class="message ai-message">
+                                <div class="message-content">
+                                    <p>Hello! I'm your AI code assistant. Upload your code or project files for review, or ask me any coding questions.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <textarea id="chat-input" placeholder="Type your message here..."></textarea>
+                            <button id="send-message" class="btn primary-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="reviewer-actions">
+                        <button id="review-code" class="btn primary-btn">
+                            <i class="fas fa-code-branch"></i> Submit Code for Review
+                        </button>
+                        <button id="download-report" class="btn secondary-btn">
+                            <i class="fas fa-download"></i> Download Report (PDF)
+                        </button>
+                        <label for="project-upload" class="btn tertiary-btn">
+                            <i class="fas fa-folder-open"></i> Upload Project Files
+                            <input type="file" id="project-upload" multiple>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="code-health-report">
+                    <div class="report-placeholder">
+                        <i class="fas fa-code"></i>
+                        <p>Submit code for review to see a detailed Code Health Report here.</p>
+                    </div>
+                    
+                    <div class="report-content" style="display: none;">
+                        <div class="report-header">
+                            <h2>AetherCode Code Review Report</h2>
+                            <p class="report-date">Generated on: <span id="report-generation-date">June 15, 2025 11:43 PM</span></p>
+                        </div>
+                        
+                        <div class="report-section">
+                            <div class="overall-review">
+                                <p id="overall-review-message">This code demonstrates good structure and follows many best practices. There are a few areas where improvements could be made, particularly in error handling and documentation.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="report-section">
+                            <h3>Code Health Overview</h3>
+                            <div class="health-overview">
+                                <div class="health-item">
+                                    <span class="health-label">Overall Summary:</span>
+                                    <span id="health-summary" class="health-value">Good</span>
+                                </div>
+                                <div class="health-item">
+                                    <span class="health-label">Health Score:</span>
+                                    <span id="health-score" class="health-value score-good">8/10</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="report-section">
+                            <h3>Issues Identified</h3>
+                            <div id="issues-list" class="issues-list">
+                                <!-- Example issue item -->
+                                <div class="issue-item">
+                                    <div class="issue-header">
+                                        <span class="issue-type security">Security</span>
+                                        <span class="issue-severity critical">Critical</span>
+                                    </div>
+                                    <div class="issue-description">
+                                        <p>Potential SQL injection vulnerability in user input handling.</p>
+                                    </div>
+                                    <div class="issue-location">
+                                        <span class="issue-line">Line: 42</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="issue-item">
+                                    <div class="issue-header">
+                                        <span class="issue-type performance">Performance</span>
+                                        <span class="issue-severity medium">Medium</span>
+                                    </div>
+                                    <div class="issue-description">
+                                        <p>Inefficient loop implementation could cause performance issues with large datasets.</p>
+                                    </div>
+                                    <div class="issue-location">
+                                        <span class="issue-line">Line: 78</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="report-section">
+                            <h3>Best Practices Followed</h3>
+                            <ul id="best-practices-list" class="practices-list">
+                                <li>Consistent code formatting and indentation</li>
+                                <li>Meaningful variable and function names</li>
+                                <li>Proper error handling for critical operations</li>
+                                <li>Efficient use of data structures</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="report-section">
+                            <h3>Practices Not Followed / Suggestions for Improvement</h3>
+                            <ul id="suggestions-list" class="practices-list suggestions">
+                                <li>Add input validation for all user-provided data</li>
+                                <li>Implement proper error logging</li>
+                                <li>Add more comprehensive documentation for complex functions</li>
+                                <li>Consider using parameterized queries for database operations</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="report-section">
+                            <h3>Code Context Reviewed</h3>
+                            <div class="code-context">
+                                <pre id="reviewed-code" class="code-preview"><code>function processUserData(userData) {
+  // This function processes user data and stores it in the database
+  const query = `INSERT INTO users (name, email) VALUES ('${userData.name}', '${userData.email}')`;
+  
+  try {
+    db.execute(query);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err };
+  }
+}
+
+function analyzePerformance(data) {
+  let results = [];
+  
+  // This could be inefficient for large datasets
+  for (let i = 0; i < data.length; i++) {
+    for (let j = 0; j < data.length; j++) {
+      if (data[i].value > data[j].value) {
+        results.push({ higher: data[i], lower: data[j] });
+      }
+    }
+  }
+  
+  return results;
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Technical Documentation Tab -->
+            <section id="tech-spec" class="tab-content">
+                <div class="tech-doc-container">
+                    <h2>Technical Documentation</h2>
+                    <p>AI-assisted documentation and design for your project.</p>
+                    
+                    <div class="tech-doc-grid">
+                        <!-- Input Section -->
+                        <div class="tech-doc-input-section">
+                            <div class="input-group">
+                                <label for="project-description">Project Description & Requirements</label>
+                                <textarea id="project-description" placeholder="Describe your project, its requirements, and any specific documentation needs..."></textarea>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Project Files</label>
+                                <button id="upload-project-files" class="secondary-button">
+                                    <i class="fas fa-upload"></i> Upload Project Files
+                                </button>
+                                <div id="uploaded-files-list" class="uploaded-files"></div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Desired Spec Sections</label>
+                                <div class="checkbox-group">
+                                    <label><input type="checkbox" name="spec-section" value="api-endpoints" checked> API Endpoints</label>
+                                    <label><input type="checkbox" name="spec-section" value="database-schema" checked> Database Schema</label>
+                                    <label><input type="checkbox" name="spec-section" value="architecture" checked> Architecture</label>
+                                    <label><input type="checkbox" name="spec-section" value="requirements" checked> Requirements</label>
+                                    <label><input type="checkbox" name="spec-section" value="tech-stack" checked> Tech Stack</label>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="output-format">Output Format</label>
+                                <select id="output-format">
+                                    <option value="markdown" selected>Markdown</option>
+                                    <option value="plain-text">Plain Text</option>
+                                    <option value="json">JSON Structure</option>
+                                </select>
+                            </div>
+                            
+                            <button id="generate-spec" class="primary-button">
+                                <i class="fas fa-cogs"></i> Generate Specification
+                            </button>
+                        </div>
+                        
+                        <!-- Output Display -->
+                        <div class="tech-doc-output-section">
+                            <div class="output-header">
+                                <h3>Generated Specification</h3>
+                                <button id="download-spec" class="secondary-button" disabled>
+                                    <i class="fas fa-download"></i> Download Spec
+                                </button>
+                            </div>
+                            
+                            <div id="generated-spec" class="generated-content">
+                                <div class="placeholder-message">
+                                    <i class="fas fa-file-alt placeholder-icon"></i>
+                                    <p>Your generated technical specification will appear here.</p>
+                                    <p>Fill in the details on the left and click "Generate Specification".</p>
+                                </div>
+                            </div>
+                            
+                            <div class="refine-section">
+                                <label for="refine-instructions">Refine with more instructions</label>
+                                <div class="refine-input-group">
+                                    <input type="text" id="refine-instructions" placeholder="Add specific instructions to refine the generated spec...">
+                                    <button id="refine-spec" class="secondary-button" disabled>
+                                        <i class="fas fa-magic"></i> Refine
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Automated Testing Tab -->
+            <section id="test-cases" class="tab-content">
+                <div class="testing-container">
+                    <h2>Automated Testing</h2>
+                    <p>AI-driven test creation for your code.</p>
+                    
+                    <div class="testing-grid">
+                        <!-- Input Section -->
+                        <div class="testing-input-section">
+                            <div class="input-group">
+                                <label for="code-to-test">Code to Test</label>
+                                <div id="test-code-editor" class="code-input-area"></div>
+                                <p class="input-note">Paste the function or code you want to test, or select from your main editor.</p>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="testing-framework">Testing Framework</label>
+                                <select id="testing-framework">
+                                    <optgroup label="Python">
+                                        <option value="pytest" selected>pytest</option>
+                                        <option value="unittest">unittest</option>
+                                    </optgroup>
+                                    <optgroup label="JavaScript">
+                                        <option value="jest">Jest</option>
+                                        <option value="mocha">Mocha</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>Test Types</label>
+                                <div class="checkbox-group">
+                                    <label><input type="checkbox" name="test-type" value="unit" checked> Unit Tests</label>
+                                    <label><input type="checkbox" name="test-type" value="integration"> Integration Tests</label>
+                                    <label><input type="checkbox" name="test-type" value="edge-cases" checked> Edge Cases</label>
+                                    <label><input type="checkbox" name="test-type" value="performance"> Performance Tests</label>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="test-scenarios">Specific Scenarios/Requirements</label>
+                                <textarea id="test-scenarios" placeholder="Describe specific test scenarios, edge cases, or requirements for your tests..."></textarea>
+                            </div>
+                            
+                            <button id="generate-tests" class="primary-button">
+                                <i class="fas fa-vial"></i> Generate Tests
+                            </button>
+                        </div>
+                        
+                        <!-- Output Display -->
+                        <div class="testing-output-section">
+                            <div class="output-header">
+                                <h3>Generated Test Code</h3>
+                                <button id="download-tests" class="secondary-button" disabled>
+                                    <i class="fas fa-download"></i> Download Test File
+                                </button>
+                            </div>
+                            
+                            <div id="generated-tests" class="generated-content code-display">
+                                <div class="placeholder-message">
+                                    <i class="fas fa-vial placeholder-icon"></i>
+                                    <p>Your generated test code will appear here.</p>
+                                    <p>Fill in the details on the left and click "Generate Tests".</p>
+                                </div>
+                            </div>
+                            
+                            <button id="run-tests" class="secondary-button disabled" disabled>
+                                <i class="fas fa-play"></i> Run Tests (Requires Local Setup)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="background-animation">
+        <div class="animation-layer"></div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+</body>
+</html>

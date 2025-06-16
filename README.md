@@ -1,105 +1,105 @@
-# AetherCode - AI Code Reviewer
+# AetherCode - Intelligent Code Refinement
 
-A modern, aesthetic web application for AI-powered code reviews with advanced code editing capabilities.
-
-## Overview
-
-AetherCode is a sleek, visually stunning web interface with an integrated Flask backend for AI code reviews. The application features a modern UI with a dark theme, animated background, responsive layout, and a powerful CodeMirror editor for syntax highlighting and code formatting.
+AetherCode is a modern, clean, and intuitive web application designed for code analysis, review, and execution. With its sleek interface and powerful features, it provides developers with an efficient environment for writing, testing, and improving their code.
 
 ## Features
 
-- **Advanced Code Editor**: CodeMirror integration with syntax highlighting for multiple languages
-- **Code Formatting**: Language-specific code formatting with a dedicated format button
-- **Code Folding**: Collapsible code sections for better readability
-- **Bracket Matching**: Automatic highlighting of matching brackets
-- **File Upload**: Support for both single file and project/archive uploads with drag-and-drop
-- **AI Chat Interface**: Interactive chat with the AI code reviewer
-- **Code Analysis**: Automated code quality assessment and suggestions
-- **Responsive Design**: Adapts seamlessly to various screen sizes
-- **Animated Background**: Subtle floating particles animation for visual appeal
-- **Typing Animation**: Dynamic text animation in the header
+### Code Editor
+- Syntax highlighting for multiple programming languages
+- Code execution with real-time output display
+- Language-specific formatting
+- Code folding and bracket matching
+- Keyboard shortcuts
+- Enhanced drag-and-drop file upload functionality
+
+### AI Code Reviewer
+- Intelligent code analysis and review
+- Interactive chat interface for coding assistance
+- Project-level analysis for multiple files
+- Downloadable code review reports
 
 ## Project Structure
 
+The project follows a modular Flask application structure:
+
 ```
 AetherCode/
-├── index.html          # Main HTML file
-├── css/
-│   └── styles.css      # Styling for the application
-├── js/
-│   ├── animations.js   # Background and typing animations
-│   ├── editor.js       # CodeMirror editor functionality
-│   └── main.js         # Core application logic
-├── backend/            # Flask backend
-│   ├── app.py          # Main Flask application
-│   ├── services/       # Backend services
-│   │   ├── ai_service.py     # AI chat and code analysis
-│   │   └── code_analyzer.py  # Code quality analysis
-│   ├── requirements.txt # Python dependencies
-│   └── .env            # Environment variables
-└── README.md           # Project documentation
+├── app/                    # Main application package
+│   ├── __init__.py         # Flask app factory
+│   ├── config/             # Configuration modules
+│   │   ├── __init__.py
+│   │   ├── language_config.py
+│   │   └── analysis_patterns.py
+│   ├── routes/             # Route handlers
+│   │   ├── __init__.py
+│   │   ├── main_routes.py  # Main routes
+│   │   └── api_routes.py   # API endpoints
+│   ├── services/           # Business logic
+│   │   ├── __init__.py
+│   │   ├── code_executor.py
+│   │   ├── code_analyzer.py
+│   │   ├── code_reviewer.py
+│   │   ├── chat_service.py
+│   │   ├── file_handler.py
+│   │   └── ai_service.py
+│   ├── templates/          # HTML templates
+│   │   └── index.html
+│   └── utils/              # Utility functions
+│       ├── __init__.py
+│       ├── error_handler.py
+│       └── logger.py
+├── static/                 # Static assets
+│   ├── css/
+│   │   └── styles.css
+│   ├── js/
+│   │   ├── script.js
+│   │   └── animations.js
+│   └── images/
+├── logs/                   # Application logs
+├── run.py                  # Application entry point
+└── README.md               # Project documentation
 ```
 
-## Getting Started
-
-### Frontend
-1. Clone this repository
-2. Open `index.html` in your browser or use a simple HTTP server:
-   ```
-   python -m http.server 8000
-   ```
-3. Access the application at `http://localhost:8000`
-
-### Backend
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
-2. Install the required Python packages:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Set up your OpenAI API key in the `.env` file:
-   ```
-   OPENAI_API_KEY=your_api_key_here
-   ```
-4. Start the Flask server:
-   ```
-   python app.py
-   ```
-5. The backend will be available at `http://localhost:5000`
-
-## API Endpoints
-
-- **POST /api/analyze**: Analyze code and provide feedback
-- **POST /api/chat**: Process chat messages with AI
-- **POST /api/upload**: Handle single file uploads
-- **POST /api/project**: Handle multiple file/project uploads
+### Coming Soon
+- Technical specification generation
+- Automated test case generation
 
 ## Technologies Used
 
-### Frontend
-- HTML5
-- CSS3 (with modern animations and flexbox layout)
-- Vanilla JavaScript (ES6+)
-- CodeMirror 5.x (code editor with syntax highlighting)
-- js-beautify (code formatting)
-- Font Awesome for icons
-- Google Fonts for typography
+- **Frontend**: HTML5, CSS3, JavaScript, CodeMirror
+- **Backend**: Flask (Python)
+- **AI Integration**: OpenAI API for intelligent code review and assistance
 
-### Backend
-- Flask (Python web framework)
-- Flask-CORS (Cross-Origin Resource Sharing)
-- OpenAI API (for AI code analysis and chat)
-- Python-dotenv (environment variable management)
+## Setup and Installation
 
-## Browser Compatibility
+1. Clone the repository
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Start the Flask backend:
+   ```
+   python app.py
+   ```
+4. Open `index.html` in your web browser or serve it using a local server
 
-The application is designed to work with modern browsers including:
-- Chrome
-- Firefox
-- Safari
-- Edge
+## API Endpoints
+
+The application connects to a Flask backend with the following endpoints:
+
+- `/api/execute` - Execute code and return output
+- `/api/chat` - Chat with AI assistant
+- `/api/review` - Submit code for AI review
+- `/api/upload` - Upload files for analysis
+
+## User Interface
+
+The UI features a clean, modern, minimalistic, and aesthetic design with:
+- Sophisticated, soft color palette with muted tones
+- Subtle gradients and judicious use of accent colors
+- Smooth, purposeful animations
+- Elegant, intuitive tabbed navigation system
+- Clear visual hierarchy and ample whitespace
 
 ## License
 
