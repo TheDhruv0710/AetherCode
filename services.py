@@ -106,13 +106,6 @@ Provide your response in JSON format with the following structure:
         
         return response
         
-    except Exception as e:
-        return {
-            "error": "Failed to analyze repository",
-            "details": str(e),
-            "tech_spec": "Unable to analyze repository. Please check the repository URL and try again.",
-            "questions": ["Is the repository public?", "Is the URL correct?", "Does the repository exist?"]
-        }
     except ValueError as e:
         error_msg = f"Value error: {e}"
         print(error_msg)
@@ -128,10 +121,8 @@ Provide your response in JSON format with the following structure:
         return {
             "error": "Repository analysis failed",
             "details": str(e),
-            "tech_spec": "Unable to analyze repository due to an unexpected error.",
-            "architecture": "Analysis not available due to error.",
-            "dependencies": "Analysis not available due to error.",
-            "questions": ["Is the repository accessible?", "Is the repository structure valid?"]
+            "tech_spec": "Unable to analyze repository. Please check the repository URL and try again.",
+            "questions": ["Is the repository public?", "Is the URL correct?", "Does the repository exist?", "Is the repository accessible?", "Is the repository structure valid?"]
         }
 
 

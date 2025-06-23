@@ -59,8 +59,11 @@ def download_repository(repo_url, branch="main"):
     # Parse the repository URL
     owner, repo = parse_repo_url(repo_url)
     
-    # Create a temporary directory
-    temp_base = tempfile.gettempdir()
+    # Create a directory in the project folder instead of system temp
+    # This avoids permission issues on systems where temp directory is not writable
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    temp_base = os.path.join(current_dir, "temp_repos")
+    os.makedirs(temp_base, exist_ok=True)
     repo_dir = os.path.join(temp_base, f"aethercode_{repo}_{int(time.time())}")
     os.makedirs(repo_dir, exist_ok=True)
     

@@ -12,7 +12,9 @@ OPENAI_API_VERSION = os.getenv('OPENAI_API_VERSION', '2023-05-15')  # Azure Open
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')  # Default to GPT-3.5 Turbo
 
 # Repository settings
-TEMP_REPO_DIR = os.getenv('TEMP_REPO_DIR', '/tmp')
+# Use a local directory for temporary repository storage to avoid permission issues
+current_dir = os.path.dirname(os.path.abspath(__file__))
+TEMP_REPO_DIR = os.getenv('TEMP_REPO_DIR', os.path.join(current_dir, 'temp_repos'))
 
 # Flask configuration
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
