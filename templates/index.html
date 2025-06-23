@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherCode - AI Code Review</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Initial landing screen -->
+    <div id="landing-screen" class="landing-screen">
+        <div id="landing-digital-core" class="digital-core"></div>
+        <h1>AetherCode</h1>
+        <p class="subtitle">The Cognitive Core Interface</p>
+        <div class="input-container">
+            <input type="text" id="repo-url" placeholder="Enter GitHub Repository URL">
+            <button id="analyze-btn">Analyze</button>
+        </div>
+    </div>
+
+    <!-- Dashboard layout (initially hidden) -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Top navigation bar -->
+        <div class="top-nav">
+            <div class="logo">AetherCode</div>
+            <div class="project-info" id="project-info">Project: Not Selected</div>
+            <div class="nav-actions">
+                <button id="new-analysis-btn"><i class="fas fa-plus"></i> New Analysis</button>
+                <button id="export-btn"><i class="fas fa-download"></i> Export Reports</button>
+            </div>
+        </div>
+
+        <!-- Main dashboard content -->
+        <div class="dashboard-content">
+            <!-- Left panel: Code Explorer -->
+            <div class="panel left-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-code"></i> Code Explorer</h3>
+                </div>
+                <div class="file-explorer" id="file-explorer">
+                    <!-- File tree will be populated here -->
+                    <div class="file-tree-placeholder">Repository files will appear here...</div>
+                </div>
+                <div class="code-viewer" id="code-viewer">
+                    <pre><code>// Selected code will appear here</code></pre>
+                </div>
+            </div>
+
+            <!-- Center panel: Chat Interface -->
+            <div class="panel center-panel">
+                <div class="panel-header center-header">
+                    <div id="dashboard-digital-core" class="digital-core dashboard-core"></div>
+                    <h3>AI Interviewer</h3>
+                </div>
+                <div class="chat-container" id="chat-container">
+                    <!-- Chat messages will appear here -->
+                    <div class="welcome-message">
+                        <p>Welcome to AetherCode! I'll analyze your code and ask relevant questions to help improve it.</p>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="user-input" placeholder="Type your response...">
+                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <!-- Right panel: Minutes & To-Dos -->
+            <div class="panel right-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-clipboard-list"></i> Minutes & To-Dos</h3>
+                </div>
+                <div class="minutes-container" id="minutes-container">
+                    <!-- Live minutes will appear here -->
+                    <h4>Meeting Minutes</h4>
+                    <div id="live-minutes">
+                        <p class="minutes-placeholder">Minutes will appear as you chat with the AI...</p>
+                    </div>
+                </div>
+                <div class="todos-container">
+                    <h4>To-Do Items</h4>
+                    <ul id="todo-list">
+                        <li class="todo-placeholder">To-Do items will be added here...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Specification Modal -->
+    <div id="tech-spec-modal" class="modal">
+        <div class="modal-content">
+            <h2>Technical Specification</h2>
+            <p id="tech-spec-content"></p>
+            <div class="modal-actions">
+                <button id="continue-to-dashboard-btn" class="primary-btn">Continue to Dashboard</button>
+                <button class="close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Reports Modal -->
+    <div id="reports-modal" class="modal">
+        <div class="modal-content">
+            <h2>Final Reports</h2>
+            <div id="reports-content"></div>
+            <button class="close-btn">Close</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

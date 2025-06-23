@@ -1,0 +1,585 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+    color: #FFFFFF; /* Primary Text - White */
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Landing Screen */
+.landing-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* Dashboard Layout */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+.hidden {
+    display: none;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #252525; /* Secondary Background - Darker Grey */
+    padding: 10px 20px;
+    border-bottom: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    height: 60px;
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #0078D7; /* Primary Accent - Bright Blue */
+}
+
+.project-info {
+    color: #FFFFFF; /* Primary Text - White */
+}
+
+.nav-actions button {
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    border: none;
+    padding: 8px 12px;
+    margin-left: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+}
+
+.nav-actions button:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+.dashboard-content {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+/* Panels */
+.panel {
+    padding: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-panel {
+    width: 30%;
+    border-right: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    background-color: #252525; /* Secondary Background - Darker Grey */
+}
+
+.center-panel {
+    width: 40%;
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+    display: flex;
+    flex-direction: column;
+}
+
+.right-panel {
+    width: 30%;
+    border-left: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    background-color: #252525; /* Secondary Background - Darker Grey */
+}
+
+.panel-header {
+    padding: 10px 0;
+    border-bottom: 1px solid #333;
+    margin-bottom: 10px;
+}
+
+.panel-header h3 {
+    color: #0078D7; /* Primary Accent - Bright Blue */
+    font-size: 1.2em;
+    margin: 0;
+}
+
+.center-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* File Explorer */
+.file-explorer {
+    height: 30%;
+    overflow-y: auto;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+}
+
+.file-tree-placeholder {
+    color: #0078D7; /* Primary Accent - Bright Blue */
+    text-align: center;
+    padding: 20px;
+}
+
+/* Code Viewer */
+.code-viewer {
+    height: 70%;
+    overflow: auto;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 4px;
+    padding: 10px;
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+}
+
+.code-viewer pre {
+    margin: 0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: #FFFFFF; /* Primary Text - White */
+}
+
+/* Chat Container */
+.chat-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: #252525; /* Secondary Background - Darker Grey */
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 20px;
+    color: #0078D7; /* Primary Accent - Bright Blue */
+    font-style: italic;
+}
+
+.chat-input-container {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 12px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+    color: #FFFFFF; /* Primary Text - White */
+    border-radius: 4px 0 0 4px;
+}
+
+#send-btn {
+    padding: 0 20px;
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#send-btn:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+/* Minutes & To-Dos */
+.minutes-container, .todos-container {
+    padding: 10px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 4px;
+    margin-bottom: 15px;
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+}
+
+.minutes-container {
+    height: 60%;
+    overflow-y: auto;
+}
+
+.todos-container {
+    height: 40%;
+    overflow-y: auto;
+}
+
+.minutes-container h4, .todos-container h4 {
+    color: #0078D7; /* Primary Accent - Bright Blue */
+    margin-bottom: 10px;
+    border-bottom: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    padding-bottom: 5px;
+}
+
+.minutes-placeholder, .todo-placeholder {
+    color: #0078D7; /* Primary Accent - Bright Blue */
+    font-style: italic;
+    opacity: 0.7;
+}
+
+#todo-list {
+    list-style-type: none;
+    padding-left: 5px;
+}
+
+#todo-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #333;
+}
+
+#todo-list li:last-child {
+    border-bottom: none;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+}
+
+.todo-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.todo-item.completed span {
+    text-decoration: line-through;
+    color: #555;
+}
+
+.digital-core {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: rgba(30, 30, 30, 0.8); /* Primary Background - Dark Grey with transparency */
+    margin: 0 auto 30px auto;
+    position: relative;
+    transition: all 0.5s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 
+        0 0 20px #0078D7, 
+        0 0 40px rgba(0, 162, 255, 0.4),
+        inset 0 0 15px rgba(0, 120, 215, 0.5);
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Outer ring with rotating gradient */
+.digital-core::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, transparent 40%, #0078D7 45%, #00A2FF 55%, transparent 60%);
+    animation: spin 8s linear infinite;
+    opacity: 0.7;
+    z-index: -1;
+}
+
+/* Inner pulsing core */
+.digital-core::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #252525 0%, #1E1E1E 60%, #0078D7 100%);
+    box-shadow: 0 0 15px rgba(0, 162, 255, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.2);
+    animation: pulse 4s ease-in-out infinite alternate;
+}
+
+/* Orbiting particles */
+.digital-core::before,
+.digital-core::after {
+    content: '';
+}
+
+/* Data streams effect */
+.digital-core .data-stream {
+    position: absolute;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, #00A2FF, transparent);
+    opacity: 0.7;
+    animation: dataStream 2s linear infinite;
+}
+
+/* Intensified state */
+.digital-core.intensified {
+    width: 140px;
+    height: 140px;
+    background-color: rgba(30, 30, 30, 0.9);
+    box-shadow: 
+        0 0 30px #0078D7, 
+        0 0 60px #00A2FF, 
+        0 0 90px rgba(0, 120, 215, 0.8),
+        inset 0 0 25px rgba(0, 162, 255, 0.6);
+    animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite alternate;
+}
+
+.digital-core.intensified::before {
+    background: linear-gradient(45deg, transparent 30%, #0078D7 40%, #00A2FF 60%, transparent 70%);
+    animation: spin 4s linear infinite;
+    opacity: 0.9;
+}
+
+.digital-core.intensified::after {
+    background: radial-gradient(circle at 40% 40%, #252525 0%, #1E1E1E 40%, #0078D7 90%);
+    animation: pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        opacity: 0.6;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes dataStream {
+    0% { height: 0; top: 0; opacity: 0; }
+    50% { opacity: 0.7; }
+    100% { height: 100%; top: 100%; opacity: 0; }
+}
+
+h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+    color: #0078D7; /* Primary Accent - Bright Blue */
+}
+
+.subtitle {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#repo-url {
+    width: 400px;
+    padding: 10px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+    color: #FFFFFF; /* Primary Text - White */
+    border-radius: 5px 0 0 5px;
+}
+
+#analyze-btn {
+    padding: 10px 20px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    cursor: pointer;
+    border-radius: 0 5px 5px 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#analyze-btn:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+    border-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(30, 30, 30, 0.9); /* Primary Background with opacity */
+    z-index: 1000;
+    overflow: auto;
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background-color: #252525; /* Secondary Background - Darker Grey */
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    width: 80%;
+    max-width: 800px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 120, 215, 0.5); /* Primary Accent with opacity */
+    animation: slideIn 0.5s;
+}
+
+@keyframes slide-in {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-btn {
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    float: right;
+    transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+.primary-btn {
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.primary-btn:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+/* Chat interface styling */
+#chat-container {
+    height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 5px;
+    background-color: rgba(30, 30, 30, 0.8); /* Primary Background with opacity */
+}
+
+.ai-message, .user-message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.ai-message {
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    align-self: flex-start;
+    margin-right: auto;
+    border-top-left-radius: 0;
+    border: 1px solid #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+.user-message {
+    background-color: #252525; /* Secondary Background - Darker Grey */
+    color: #FFFFFF; /* Primary Text - White */
+    align-self: flex-end;
+    margin-left: auto;
+    border-top-right-radius: 0;
+    text-align: right;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+}
+
+#user-input {
+    width: calc(100% - 100px);
+    padding: 10px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+    color: #FFFFFF; /* Primary Text - White */
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+#send-btn {
+    padding: 10px 15px;
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#send-btn:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
+
+/* Code viewer styling */
+.code-viewer-placeholder {
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 5px;
+    padding: 15px;
+    margin: 20px 0;
+    font-family: monospace;
+    white-space: pre;
+    overflow-x: auto;
+    color: #FFFFFF; /* Primary Text - White */
+}
+
+/* Reports styling */
+.report-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
+    border-radius: 5px;
+    background-color: #1E1E1E; /* Primary Background - Dark Grey */
+}
+
+.report-section h3 {
+    color: #0078D7; /* Primary Accent - Bright Blue */
+    margin-top: 0;
+}
+
+.download-btn {
+    background-color: #0078D7; /* Primary Accent - Bright Blue */
+    color: #FFFFFF; /* Primary Text - White */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto;
+    transition: background-color 0.3s;
+}
+
+.download-btn:hover {
+    background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
+}
