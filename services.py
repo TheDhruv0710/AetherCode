@@ -27,10 +27,9 @@ def call_openai_api(prompt, system_prompt="You are a helpful AI assistant for co
         raise ValueError("Azure OpenAI API configuration not complete. Please check your .env file.")
     
     try:
-        # For Azure OpenAI, we use the deployment name instead of the model name
-        # The deployment name is typically the same as the model name (e.g., 'gpt-3.5-turbo')
+        # For Azure OpenAI, we just need to use the model parameter with the deployment name
         response = client.chat.completions.create(
-            deployment_name=OPENAI_MODEL,  # Use deployment_name instead of model for Azure
+            model=OPENAI_MODEL,  # This should be the deployment name in Azure
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
@@ -307,4 +306,62 @@ def generate_reports(project_id):
             "insights": "System encountered an error with Azure OpenAI API.",
             "code_health": "Unable to assess code health due to API error.",
             "action_items": ["Check Azure OpenAI API configuration", "Verify API key and endpoint URL"]
+        }
+
+
+# Function to get repository structure
+def get_repository_structure(project_id):
+    """
+    Get the repository structure for a project.
+    In a real implementation, this would retrieve the stored repository structure.
+    
+    Args:
+        project_id (str): The project ID
+        
+    Returns:
+        dict: Repository structure information
+    """
+    try:
+        # In a production environment, you would retrieve this from a database
+        # For now, we'll return a simple structure or check the temp_repos directory
+        import os
+        from config import TEMP_REPO_DIR
+        
+        # Check if we have any repositories in the temp_repos directory
+        if os.path.exists(TEMP_REPO_DIR):
+            repo_dirs = [d for d in os.listdir(TEMP_REPO_DIR) if os.path.isdir(os.path.join(TEMP_REPO_DIR, d))]
+            
+            if repo_dirs:
+                # Use the most recent repository directory
+                repo_dir = os.path.join(TEMP_REPO_DIR, repo_dirs[-1])
+                
+                # Find subdirectories in the repository directory
+                extracted_dirs = [d for d in os.listdir(repo_dir) if os.path.isdir(os.path.join(repo_dir, d))]
+                if extracted_dirs:
+                    # Use the first extracted directory (typically the repository name with branch)
+                    repo_dir = os.path.join(repo_dir, extracted_dirs[0])
+                
+                # Get the repository structure using the github_api module
+                from github_api import get_repository_structure as get_repo_structure
+                file_structure = get_repo_structure(repo_dir)
+                
+                # Print the file structure for debugging
+                print(f"File structure for {project_id}:\n{file_structure}")
+                
+                return {
+                    "file_structure": file_structure,
+                    "project_id": project_id
+                }
+        
+        # If no repository is found, return a simple structure
+        return {
+            "file_structure": "Repository structure not available.",
+            "project_id": project_id
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "error": f"Failed to get repository structure: {str(e)}",
+            "project_id": project_id
         }

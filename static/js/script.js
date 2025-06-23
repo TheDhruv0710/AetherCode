@@ -255,33 +255,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Update file explorer with repository structure
-    function updateFileExplorer() {
-        // Mock file structure for demo
-        const mockFiles = [
-            { name: 'app.py', type: 'file', path: '/app.py' },
-            { name: 'routes.py', type: 'file', path: '/routes.py' },
-            { name: 'services.py', type: 'file', path: '/services.py' },
-            { name: 'requirements.txt', type: 'file', path: '/requirements.txt' },
-            { name: 'static', type: 'folder', children: [
-                { name: 'css', type: 'folder', children: [
-                    { name: 'style.css', type: 'file', path: '/static/css/style.css' }
-                ]},
-                { name: 'js', type: 'folder', children: [
-                    { name: 'script.js', type: 'file', path: '/static/js/script.js' }
-                ]}
-            ]},
-            { name: 'templates', type: 'folder', children: [
-                { name: 'index.html', type: 'file', path: '/templates/index.html' }
-            ]}
-        ];
-        
-        fileExplorer.innerHTML = renderFileTree(mockFiles);
+    async function updateFileExplorer() {
+        try {
+            // Fetch the actual repository structure from the backend
+            const response = await fetch(`/api/repo_structure?project_id=${currentProjectId}`);
+            const data = await response.json();
+            
+            console.log('Repository structure response:', data);
+            
+            if (data.error) {
+                console.error('Error fetching repository structure:', data.error);
+                fileExplorer.innerHTML = `<div class="file-tree-placeholder">Error loading repository structure: ${data.error}</div>`;
+                return;
+            }
+            
+            if (!data.file_structure || data.file_structure === "Repository structure not available.") {
+                fileExplorer.innerHTML = '<div class="file-tree-placeholder">Repository structure not available. The repository may still be downloading or processing.</div>';
+                return;
+            }
+            
+            // Parse the file structure string into a hierarchical object
+            const fileStructure = parseFileStructure(data.file_structure);
+            
+            // Render the file tree
+            fileExplorer.innerHTML = renderFileTree(fileStructure);
+            
+            // Add click event listeners to folders and files
+            addFileTreeEventListeners();
+        } catch (error) {
+            console.error('Error updating file explorer:', error);
+            fileExplorer.innerHTML = '<div class="file-tree-placeholder">Error loading repository structure. Please try again later.</div>';
+        }
+    }
+    
+    // Add event listeners to the file tree elements
+    function addFileTreeEventListeners() {
+        // Add click event listeners to folders
+        document.querySelectorAll('.folder-name').forEach(folderElement => {
+            folderElement.addEventListener('click', function() {
+                // Toggle the folder's expanded state
+                const folderItem = this.parentElement;
+                folderItem.classList.toggle('expanded');
+                
+                // Toggle visibility of child elements
+                const childList = folderItem.querySelector('ul');
+                if (childList) {
+                    childList.style.display = folderItem.classList.contains('expanded') ? 'block' : 'none';
+                }
+            });
+        });
         
         // Add click event listeners to files
-        document.querySelectorAll('.file-item').forEach(item => {
+        document.querySelectorAll('.file-name').forEach(item => {
             item.addEventListener('click', function() {
                 const path = this.getAttribute('data-path');
-                loadFileContent(path);
+                console.log('File clicked:', path);
+                // Here you would typically load the file content
+                // For now, just update the selected file in the UI
+                document.querySelectorAll('.file-name').forEach(f => f.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // Update the code viewer with a placeholder message
+                const codeViewer = document.getElementById('code-viewer');
+                if (codeViewer) {
+                    codeViewer.innerHTML = `<div class="code-placeholder">Loading file: ${path}...</div>`;
+                }
             });
         });
         
@@ -295,20 +333,143 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Render file tree HTML
+    // Parse file structure string into a hierarchical object
+    function parseFileStructure(fileStructureString) {
+        if (!fileStructureString || typeof fileStructureString !== 'string') {
+            console.error('Invalid file structure:', fileStructureString);
+            return [];
+        }
+        
+        // Log the file structure for debugging
+        console.log('File structure string:', fileStructureString);
+        
+        // Check if the first line is "Repository structure:" and remove it
+        const lines = fileStructureString.split('\n')
+            .filter(line => line.trim() !== '')
+            .filter((line, index) => index !== 0 || !line.includes('Repository structure:'));
+        
+        // Root object to hold the file structure
+        const root = [];
+        
+        // Stack to keep track of the current path and indentation level
+        const stack = [{ items: root, level: -1 }];
+        
+        // Current path to build full file paths
+        let currentPath = '';
+        
+        // Process each line
+        lines.forEach(line => {
+            // Count the indentation level (number of spaces at the beginning)
+            const match = line.match(/^(\s*)(.+)$/);
+            if (!match) return;
+            
+            const indent = match[1].length;
+            const name = match[2].trim();
+            
+            // Skip "more files" lines
+            if (name.includes('(more files)') || name.includes('(more files not shown)')) {
+                return;
+            }
+            
+            // Determine if it's a file or folder based on the presence of a trailing slash
+            const isFolder = name.endsWith('/');
+            const cleanName = isFolder ? name.replace(/\/$/, '') : name;
+            
+            // Find the parent at the appropriate indentation level
+            while (stack.length > 1 && stack[stack.length - 1].level >= indent) {
+                stack.pop();
+                // Update current path when going up in the hierarchy
+                const pathParts = currentPath.split('/');
+                pathParts.pop();
+                currentPath = pathParts.join('/');
+            }
+            
+            const parent = stack[stack.length - 1].items;
+            
+            if (isFolder) {
+                // Update current path
+                currentPath = currentPath ? `${currentPath}/${cleanName}` : cleanName;
+                
+                // Create a new folder item
+                const folder = {
+                    name: cleanName,
+                    type: 'folder',
+                    children: []
+                };
+                parent.push(folder);
+                
+                // Add this folder to the stack
+                stack.push({
+                    items: folder.children,
+                    level: indent
+                });
+            } else {
+                // Create a new file item with full path
+                const filePath = currentPath ? `${currentPath}/${cleanName}` : cleanName;
+                parent.push({
+                    name: cleanName,
+                    type: 'file',
+                    path: `/${filePath}`
+                });
+            }
+        });
+        
+        return root;
+    }
+    
+    // Render file tree as HTML
     function renderFileTree(items) {
+        if (!items || items.length === 0) {
+            return '<div class="file-tree-placeholder">No files to display</div>';
+        }
+        
         let html = '<ul class="file-tree">';
         
-        items.forEach(item => {
-            if (item.type === 'file') {
-                html += `<li><span class="file-item" data-path="${item.path}"><i class="fas fa-file-code"></i> ${item.name}</span></li>`;
-            } else if (item.type === 'folder') {
-                html += `<li>
-                    <span class="folder-item"><i class="fas fa-folder"></i> ${item.name}</span>
-                    <div class="folder-children" style="display: none;">
+        // Sort items: folders first, then files, both alphabetically
+        const sortedItems = [...items].sort((a, b) => {
+            if (a.type !== b.type) {
+                return a.type === 'folder' ? -1 : 1; // Folders before files
+            }
+            return a.name.localeCompare(b.name); // Alphabetical within same type
+        });
+        
+        sortedItems.forEach(item => {
+            if (item.type === 'folder') {
+                html += `
+                    <li class="folder">
+                        <span class="folder-name" title="${item.name}">
+                            <i class="fas fa-folder"></i> ${item.name}
+                        </span>
                         ${renderFileTree(item.children)}
-                    </div>
-                </li>`;
+                    </li>
+                `;
+            } else {
+                // Determine file icon based on extension
+                const extension = item.name.split('.').pop().toLowerCase();
+                let iconClass = 'fas fa-file';
+                
+                // Add specific icons for common file types
+                if (['js', 'jsx', 'ts', 'tsx'].includes(extension)) {
+                    iconClass = 'fab fa-js';
+                } else if (['py'].includes(extension)) {
+                    iconClass = 'fab fa-python';
+                } else if (['html', 'htm'].includes(extension)) {
+                    iconClass = 'fab fa-html5';
+                } else if (['css', 'scss', 'sass'].includes(extension)) {
+                    iconClass = 'fab fa-css3-alt';
+                } else if (['md', 'markdown'].includes(extension)) {
+                    iconClass = 'fas fa-file-alt';
+                } else if (['json'].includes(extension)) {
+                    iconClass = 'fas fa-code';
+                }
+                
+                html += `
+                    <li class="file">
+                        <span class="file-name" data-path="${item.path}" title="${item.path}">
+                            <i class="${iconClass}"></i> ${item.name}
+                        </span>
+                    </li>
+                `;
             }
         });
         

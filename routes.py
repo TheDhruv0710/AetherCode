@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, render_template
-from services import analyze_repository, process_dialogue, generate_reports
+from services import analyze_repository, process_dialogue, generate_reports, get_repository_structure
 
 main_routes = Blueprint('main', __name__)
 
@@ -40,3 +40,13 @@ def get_reports():
     # This will call the placeholder function in services.py
     reports = generate_reports(project_id)
     return jsonify(reports)
+
+@main_routes.route('/api/repo_structure', methods=['GET'])
+def repo_structure():
+    project_id = request.args.get('project_id')
+    if not project_id:
+        return jsonify({'error': 'Project ID is required'}), 400
+
+    # Get the repository structure from the services module
+    structure = get_repository_structure(project_id)
+    return jsonify(structure)
