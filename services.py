@@ -1,30 +1,36 @@
-import git
 import os
-import shutil
 import json
 import time
 import tempfile
 import openai
-from openai import OpenAI
-from config import OPENAI_API_KEY, OPENAI_MODEL
+from openai import AzureOpenAI
+from config import OPENAI_API_KEY, OPENAI_MODEL, OPENAI_API_BASE, OPENAI_API_VERSION
 
-# Initialize OpenAI client
+# Import the github_api module for repository analysis without Git
+from github_api import analyze_github_repository, get_repository_structure, get_key_file_contents
+
+# Initialize Azure OpenAI client
 client = None
-if OPENAI_API_KEY:
-    client = OpenAI(api_key=OPENAI_API_KEY)
+if OPENAI_API_KEY and OPENAI_API_BASE:
+    client = AzureOpenAI(
+        api_key=OPENAI_API_KEY,
+        api_version=OPENAI_API_VERSION,
+        azure_endpoint=OPENAI_API_BASE
+    )
 
 def call_openai_api(prompt, system_prompt="You are a helpful AI assistant for code review."):
     """
-    Call the OpenAI API with the given prompt and return the response.
-    Falls back to mock data if the API key is not set or if the API call fails.
+    Call the Azure OpenAI API with the given prompt and return the response.
+    Raises an exception if the API key is not set or if the API call fails.
     """
-    if not client or not OPENAI_API_KEY:
-        print("OpenAI API key not set. Using mock data.")
-        return get_mock_response(prompt)
+    if not client or not OPENAI_API_KEY or not OPENAI_API_BASE:
+        raise ValueError("Azure OpenAI API configuration not complete. Please check your .env file.")
     
     try:
+        # For Azure OpenAI, we use the deployment name instead of the model name
+        # The deployment name is typically the same as the model name (e.g., 'gpt-3.5-turbo')
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            deployment_name=OPENAI_MODEL,  # Use deployment_name instead of model for Azure
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
@@ -33,128 +39,78 @@ def call_openai_api(prompt, system_prompt="You are a helpful AI assistant for co
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        print(f"OpenAI API call failed: {e}")
-        # Fallback to mock data on API failure
-        return get_mock_response(prompt)
+        raise RuntimeError(f"Azure OpenAI API call failed: {e}")
 
 
-def get_mock_response(prompt):
-    """Returns mock data for different prompts."""
-    if "technical specification" in prompt.lower() or "repository" in prompt.lower():
-        return {
-            "tech_spec": "# Mock Technical Specification\n\n## Project Overview\nThis appears to be a web application built with Flask that provides a code review and analysis dashboard. The application has a modern UI with a dark green theme and provides features for analyzing GitHub repositories, conducting AI-assisted code reviews, and generating reports.\n\n## Architecture\nThe application follows a typical Flask web application architecture with routes, services, and templates. It uses OpenAI's API for generating insights about code.\n\n## Key Components\n- Flask web server\n- GitHub repository analysis\n- OpenAI integration for code insights\n- Modern UI with dark green theme",
-            "architecture": "The application uses a simple MVC-like architecture with Flask routes handling requests, services performing business logic, and templates rendering the UI.",
-            "dependencies": "- Flask: Web framework\n- GitPython: For GitHub repository operations\n- OpenAI: For AI-powered code analysis\n- python-dotenv: For environment variable management",
-            "questions": [
-                "What are the main features you want to implement in the dashboard?",
-                "How do you plan to handle authentication for private repositories?",
-                "What specific code metrics are most important for your analysis?",
-                "Would you like to implement real-time collaboration features?"
-            ]
-        }
-    elif "dialogue" in prompt.lower():
-        return {
-            "ai_response": "That's a great insight! How would you refactor the code to improve performance (from OpenAI)?",
-            "mom": "- User clarified the purpose of the main function.",
-            "insights": "- The current implementation can be optimized."
-        }
-    elif "reports" in prompt.lower():
-        return {
-            "tech_spec": "This is the final refined technical specification (from OpenAI).",
-            "mom": "- User clarified the purpose of the main function.\n- User suggested performance improvements.",
-            "insights": "- The current implementation can be optimized.\n- A refactoring task has been created.",
-            "code_health": "Overall code health is good, with some areas for improvement."
-        }
-    return {}
+# Azure OpenAI API functionality only
 
 
 def analyze_repository(repo_url):
     """
-    Clones a GitHub repository, analyzes its structure and code,
-    and generates a technical specification using OpenAI.
-    Falls back to mock data if cloning fails or if API key is not available.
+    Analyzes a GitHub repository using the github_api module (no Git installation required),
+    and generates a technical specification using Azure OpenAI API.
     """
-    # Check if OpenAI API key is available - if not, use mock data immediately
-    if not OPENAI_API_KEY:
-        print("OpenAI API key not set. Using mock data for repository analysis.")
-        mock_data = get_mock_response(f"technical specification for repository {repo_url}")
-        # Add repository URL to the mock data
-        mock_data["repository_url"] = repo_url
-        mock_data["note"] = "This is mock data. To get actual analysis, please set your OpenAI API key."
-        return mock_data
+    # Check if Azure OpenAI API configuration is complete
+    if not OPENAI_API_KEY or not OPENAI_API_BASE:
+        raise ValueError("Azure OpenAI API configuration not complete. Please check your .env file.")
         
     try:
         if not repo_url.startswith(('http://', 'https://')):
             raise ValueError("Invalid URL format")
+        
+        # Use the github_api module to analyze the repository
+        print(f"Analyzing repository: {repo_url}")
+        repo_analysis = analyze_github_repository(repo_url)
+        
+        # Check if there was an error during analysis
+        if 'error' in repo_analysis:
+            raise RuntimeError(f"Error analyzing repository: {repo_analysis['error']}")
+        
+        # Extract the analysis results
+        file_structure = repo_analysis['file_structure']
+        file_contents = repo_analysis['file_contents']
+        commit_history = repo_analysis['commit_history']
+        
+        # Prepare the prompt for OpenAI API
+        prompt = f"""Repository URL: {repo_url}
 
-        # Create a platform-independent temporary directory
-        temp_base = tempfile.gettempdir()
-        
-        # Extract repo name from URL
-        repo_name = repo_url.split('/')[-1].replace('.git', '')
-        if not repo_name:
-            repo_name = f"repo_{int(time.time())}"
-            
-        # Create full path to clone directory
-        clone_dir = os.path.join(temp_base, f"aethercode_{repo_name}")
-        print(f"Clone directory: {clone_dir}")
+Repository Structure:
+{file_structure}
 
-        # Clean up existing directory if it exists
-        if os.path.exists(clone_dir):
-            print(f"Removing existing directory: {clone_dir}")
-            shutil.rmtree(clone_dir, ignore_errors=True)
+Key File Contents:
+{file_contents}
 
-        print(f"Cloning repository: {repo_url}")
-        # Configure git to use longer timeouts
-        git_env = os.environ.copy()
-        git_env['GIT_HTTP_LOW_SPEED_LIMIT'] = '1000'
-        git_env['GIT_HTTP_LOW_SPEED_TIME'] = '60'
-        
-        # Clone with explicit options
-        repo = git.Repo.clone_from(
-            repo_url, 
-            clone_dir,
-            env=git_env,
-            depth=1  # Shallow clone for faster download
-        )
-        
-        # Analyze the repository structure
-        file_structure = get_repo_structure(clone_dir)
-        file_contents = get_key_file_contents(clone_dir)
-        commit_history = get_commit_history(repo)
-        
-        # Prepare a detailed prompt for OpenAI
-        system_prompt = """You are an expert code reviewer and software architect. 
-        Analyze the provided repository information and generate a comprehensive technical specification.
-        Your response must be in JSON format with the following structure:
-        {
-            "tech_spec": "Detailed technical specification of the project",
-            "architecture": "Description of the software architecture",
-            "dependencies": "List of key dependencies and their purposes",
-            "questions": ["List of 3-5 insightful questions to ask about the codebase"]
-        }
-        """
-        
-        prompt = f"""Repository: {repo_url}\n\n
-        File Structure:\n{file_structure}\n\n
-        Key Files:\n{file_contents}\n\n
-        Commit History:\n{commit_history}\n\n
-        Based on this information, generate a technical specification for the repository.
-        """
-        
-        # Clean up the cloned repository
-        shutil.rmtree(clone_dir)
-        
-        # Call OpenAI API with the detailed prompt
-        return call_openai_api(prompt, system_prompt)
+Commit History:
+{commit_history}
 
-    except git.exc.GitCommandError as e:
-        error_msg = f"Git command error: {e}"
-        print(error_msg)
+Based on this repository information, generate a comprehensive technical specification that includes:
+1. Project overview and purpose
+2. Architecture and design patterns
+3. Key components and their relationships
+4. Technologies and frameworks used
+5. API endpoints (if applicable)
+6. Database schema (if applicable)
+7. Deployment considerations
+8. Potential improvements or issues
+
+Provide your response in JSON format with the following structure:
+{
+    "tech_spec": "The technical specification with sections and details",
+    "insights": "Initial insights about the codebase",
+    "code_health": "Assessment of code quality and health"
+}
+"""
+        
+        # Call Azure OpenAI API
+        response = call_openai_api(prompt)
+        
+        return response
+        
+    except Exception as e:
         return {
-            "error": "Failed to clone repository",
+            "error": "Failed to analyze repository",
             "details": str(e),
-            "tech_spec": "Unable to analyze repository due to Git error. Please check the repository URL and try again.",
+            "tech_spec": "Unable to analyze repository. Please check the repository URL and try again.",
             "questions": ["Is the repository public?", "Is the URL correct?", "Does the repository exist?"]
         }
     except ValueError as e:
@@ -169,12 +125,14 @@ def analyze_repository(repo_url):
     except Exception as e:
         error_msg = f"Unexpected error during repository analysis: {e}"
         print(error_msg)
-        # Still try to use OpenAI for a mock response
-        prompt = "Generate a technical specification for a mock project."
-        mock_response = call_openai_api(prompt)
-        mock_response["error"] = "Repository analysis failed"
-        mock_response["details"] = str(e)
-        return mock_response
+        return {
+            "error": "Repository analysis failed",
+            "details": str(e),
+            "tech_spec": "Unable to analyze repository due to an unexpected error.",
+            "architecture": "Analysis not available due to error.",
+            "dependencies": "Analysis not available due to error.",
+            "questions": ["Is the repository accessible?", "Is the repository structure valid?"]
+        }
 
 
 def get_repo_structure(repo_dir, max_files=50):
@@ -264,7 +222,7 @@ def process_dialogue(project_id, user_response):
     """
     Processes a turn in the dialogue with the AI.
     Maintains conversation history to provide context for the AI.
-    Works in both API and mock modes.
+    Uses Azure OpenAI API for generating responses.
     """
     # Initialize dialogue history for this project if it doesn't exist
     if project_id not in dialogue_history:
@@ -280,9 +238,9 @@ def process_dialogue(project_id, user_response):
     Your response must be in JSON format with the following structure:
     {
         "ai_response": "Your response to the user",
-        "mom": "A bullet point to add to the meeting minutes",
+        "discussion_points": "A bullet point to add to the discussion points",
         "insights": "A key insight gained from this exchange",
-        "todos": ["Optional list of to-do items identified"]
+        "action_items": ["Optional list of action items identified"]
     }
     """
     
@@ -294,18 +252,19 @@ def process_dialogue(project_id, user_response):
     # Create the prompt with conversation history
     prompt = f"Project ID: {project_id}\n\nConversation History:\n"
     prompt += "\n".join([f"{'User: ' if i % 2 == 0 else 'AI: '}{msg}" for i, msg in enumerate(conversation)])
-    prompt += "\n\nBased on this conversation, provide your next response, meeting minutes update, and any insights or to-dos."
+    prompt += "\n\nBased on this conversation, provide your next response, discussion points update, and any insights or action items."
     
-    # Call OpenAI API or use mock data
-    if not OPENAI_API_KEY:
-        print("OpenAI API key not set. Using mock data for dialogue.")
-        response = get_mock_response("dialogue")
-        # Add project-specific context to mock response
-        response["ai_response"] = f"[Mock Mode] {response['ai_response']} (Project: {project_id})"
-        response["mom"] += f" (Project: {project_id})"
-        response["note"] = "This is mock data. To get actual AI responses, please set your OpenAI API key."
-    else:
+    # Call Azure OpenAI API
+    try:
         response = call_openai_api(prompt, system_prompt)
+    except Exception as e:
+        # Return error response if API call fails
+        return {
+            "error": str(e),
+            "ai_response": f"Error: Could not process request. Please check your Azure OpenAI configuration.",
+            "discussion_points": "- Error occurred during AI processing.",
+            "insights": "- System encountered an error with Azure OpenAI API."
+        }
     
     # Add AI response to dialogue history
     if "ai_response" in response:
@@ -317,7 +276,7 @@ def process_dialogue(project_id, user_response):
 def generate_reports(project_id):
     """
     Generates the final reports for the project based on the dialogue history.
-    Works in both API and mock modes.
+    Uses Azure OpenAI API for generating comprehensive reports.
     """
     if project_id not in dialogue_history or not dialogue_history[project_id]:
         return {"error": "No dialogue history found for this project."}
@@ -328,7 +287,7 @@ def generate_reports(project_id):
     Your response must be in JSON format with the following structure:
     {
         "tech_spec": "Final technical specification based on the dialogue",
-        "mom": "Complete meeting minutes summarizing the entire conversation",
+        "discussion_points": "Complete discussion points summarizing the entire conversation",
         "insights": "Key insights and findings from the code review",
         "code_health": "Assessment of the overall code health and recommendations",
         "action_items": ["List of action items and next steps"]
@@ -343,16 +302,18 @@ def generate_reports(project_id):
     # Create the prompt with the full conversation history
     prompt = f"Project ID: {project_id}\n\nComplete Dialogue History:\n"
     prompt += "\n".join(conversation)
-    prompt += "\n\nBased on this complete conversation, generate final reports including technical specification, meeting minutes, insights, code health assessment, and action items."
+    prompt += "\n\nBased on this complete conversation, generate final reports including technical specification, discussion points, insights, code health assessment, and action items."
     
-    # Call OpenAI API or use mock data
-    if not OPENAI_API_KEY:
-        print("OpenAI API key not set. Using mock data for reports.")
-        mock_response = get_mock_response("reports")
-        # Add project-specific context to mock response
-        mock_response["tech_spec"] = f"[Mock Mode] Technical Specification for Project: {project_id}\n" + mock_response["tech_spec"]
-        mock_response["mom"] += f"\n- Project ID: {project_id}"
-        mock_response["note"] = "This is mock data. To get actual AI-generated reports, please set your OpenAI API key."
-        return mock_response
-    else:
+    # Call Azure OpenAI API
+    try:
         return call_openai_api(prompt, system_prompt)
+    except Exception as e:
+        # Return error response if API call fails
+        return {
+            "error": str(e),
+            "tech_spec": "Error: Could not generate technical specification. Please check your Azure OpenAI configuration.",
+            "discussion_points": "Error occurred during report generation.",
+            "insights": "System encountered an error with Azure OpenAI API.",
+            "code_health": "Unable to assess code health due to API error.",
+            "action_items": ["Check Azure OpenAI API configuration", "Verify API key and endpoint URL"]
+        }

@@ -12,11 +12,12 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['DEBUG'] = DEBUG
 app.config['SECRET_KEY'] = 'aethercode-secret-key'  # Change this in production
 
-# Check if OpenAI API key is configured
-if not OPENAI_API_KEY:
+# Check if Azure OpenAI API is configured
+from config import OPENAI_API_BASE
+if not OPENAI_API_KEY or not OPENAI_API_BASE:
     print("\n" + "*" * 80)
-    print("WARNING: OpenAI API key is not set. The application will use mock data.")
-    print("To use the OpenAI API, create a .env file with your OPENAI_API_KEY.")
+    print("WARNING: Azure OpenAI API configuration is incomplete.")
+    print("To use the Azure OpenAI API, create a .env file with your OPENAI_API_KEY and OPENAI_API_BASE.")
     print("See .env.example for reference.")
     print("*" * 80 + "\n")
 

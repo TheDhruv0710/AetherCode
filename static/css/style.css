@@ -200,7 +200,7 @@ body {
     background-color: #00A2FF; /* Secondary Accent - Lighter Blue */
 }
 
-/* Minutes & To-Dos */
+/* Discussion Points & Action Items */
 .minutes-container, .todos-container {
     padding: 10px;
     border: 1px solid #0078D7; /* Primary Accent - Bright Blue */
