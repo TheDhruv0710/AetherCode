@@ -1,0 +1,261 @@
+/* File Explorer Styles */
+.file-tree {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 2px 0;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.file-item:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #FFFFFF;
+}
+
+.file-item.selected {
+    background-color: rgba(139, 92, 246, 0.2);
+    border-left: 3px solid #8B5CF6;
+}
+
+.file-item.folder {
+    font-weight: 500;
+}
+
+.file-item.folder.expanded > .file-icon::before {
+    transform: rotate(90deg);
+}
+
+.file-icon {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.file-icon i {
+    font-size: 14px;
+    color: #8B5CF6;
+}
+
+/* Folder icons */
+.file-icon.folder i {
+    color: #A855F7;
+}
+
+/* File type specific colors */
+.file-icon.javascript i,
+.file-icon.typescript i {
+    color: #F7DF1E;
+}
+
+.file-icon.python i {
+    color: #3776AB;
+}
+
+.file-icon.css i {
+    color: #1572B6;
+}
+
+.file-icon.html i {
+    color: #E34F26;
+}
+
+.file-icon.json i {
+    color: #00D8FF;
+}
+
+.file-icon.markdown i {
+    color: #FFFFFF;
+}
+
+.file-icon.image i {
+    color: #FF6B6B;
+}
+
+.file-icon.text i {
+    color: #B3B3B3;
+}
+
+.file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #FFFFFF;
+}
+
+.file-children {
+    margin-left: 20px;
+    border-left: 1px solid rgba(139, 92, 246, 0.2);
+    padding-left: 10px;
+}
+
+.file-children.collapsed {
+    display: none;
+}
+
+/* Folder toggle arrow */
+.folder-toggle {
+    margin-right: 4px;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.folder-toggle::before {
+    content: '▶';
+    font-size: 10px;
+    color: #8B5CF6;
+}
+
+.folder-toggle.expanded::before {
+    transform: rotate(90deg);
+}
+
+/* Loading state for file tree */
+.file-tree-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #B3B3B3;
+}
+
+.file-tree-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #8B5CF6;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+/* Empty state */
+.file-tree-empty {
+    text-align: center;
+    padding: 20px;
+    color: #B3B3B3;
+    font-style: italic;
+}
+
+/* File size and metadata */
+.file-meta {
+    font-size: 0.8em;
+    color: #B3B3B3;
+    margin-left: auto;
+    padding-left: 10px;
+}
+
+/* Breadcrumb navigation */
+.file-breadcrumb {
+    padding: 10px 15px;
+    background-color: #333333;
+    border-bottom: 1px solid #404040;
+    font-size: 0.9em;
+    color: #B3B3B3;
+}
+
+.file-breadcrumb .breadcrumb-item {
+    color: #8B5CF6;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.file-breadcrumb .breadcrumb-item:hover {
+    color: #A855F7;
+    text-decoration: underline;
+}
+
+.file-breadcrumb .breadcrumb-separator {
+    margin: 0 8px;
+    color: #B3B3B3;
+}
+
+/* Search functionality */
+.file-search {
+    padding: 10px 15px;
+    border-bottom: 1px solid #404040;
+}
+
+.file-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    background-color: #2A2A2A;
+    color: #FFFFFF;
+    font-size: 0.9em;
+    outline: none;
+}
+
+.file-search input:focus {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+}
+
+.file-search input::placeholder {
+    color: #B3B3B3;
+}
+
+/* Highlighted search results */
+.file-item.search-match {
+    background-color: rgba(139, 92, 246, 0.15);
+}
+
+.file-item.search-match .file-name {
+    font-weight: 500;
+}
+
+/* Context menu styles */
+.file-context-menu {
+    position: absolute;
+    background-color: #333333;
+    border: 1px solid #8B5CF6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.file-context-menu .menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #FFFFFF;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.file-context-menu .menu-item:hover {
+    background-color: rgba(139, 92, 246, 0.2);
+}
+
+.file-context-menu .menu-item:first-child {
+    border-radius: 6px 6px 0 0;
+}
+
+.file-context-menu .menu-item:last-child {
+    border-radius: 0 0 6px 6px;
+}
+
+.file-context-menu .menu-separator {
+    height: 1px;
+    background-color: #404040;
+    margin: 4px 0;
+}

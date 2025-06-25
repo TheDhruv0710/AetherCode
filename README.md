@@ -1,106 +1,188 @@
-# AetherCode - AI Code Reviewer
+# AetherCode - AI-Powered Code Review Platform
 
-A modern, aesthetic web application for AI-powered code reviews with advanced code editing capabilities.
-
-## Overview
-
-AetherCode is a sleek, visually stunning web interface with an integrated Flask backend for AI code reviews. The application features a modern UI with a dark theme, animated background, responsive layout, and a powerful CodeMirror editor for syntax highlighting and code formatting.
+AetherCode is an intelligent code review application that replaces traditional code review meetings with an AI interviewer. It analyzes GitHub repositories, conducts interactive discussions, and generates comprehensive technical documentation in real-time.
 
 ## Features
 
-- **Advanced Code Editor**: CodeMirror integration with syntax highlighting for multiple languages
-- **Code Formatting**: Language-specific code formatting with a dedicated format button
-- **Code Folding**: Collapsible code sections for better readability
-- **Bracket Matching**: Automatic highlighting of matching brackets
-- **File Upload**: Support for both single file and project/archive uploads with drag-and-drop
-- **AI Chat Interface**: Interactive chat with the AI code reviewer
-- **Code Analysis**: Automated code quality assessment and suggestions
-- **Responsive Design**: Adapts seamlessly to various screen sizes
-- **Animated Background**: Subtle floating particles animation for visual appeal
-- **Typing Animation**: Dynamic text animation in the header
+- **Repository Analysis**: Clone and analyze public GitHub repositories
+- **AI-Powered Chat**: Interactive discussions about your codebase with Azure OpenAI
+- **Technical Specifications**: Auto-generated technical documentation
+- **Code Health Reports**: Comprehensive code quality analysis
+- **Meeting Minutes**: Automated documentation of review sessions
+- **Insights Generation**: AI-driven insights and recommendations
+- **File Explorer**: Browse repository structure with syntax highlighting
+- **Export Reports**: Generate and export comprehensive reports
+
+## Tech Stack
+
+### Frontend
+- **HTML5/CSS3/JavaScript**: Modern vanilla web technologies
+- **Inter Font**: Clean, professional typography
+- **Violet Theme**: Modern dark theme with violet accents
+
+### Backend
+- **Flask**: Python web framework
+- **SQLAlchemy**: Database ORM
+- **Azure OpenAI**: AI-powered analysis and chat
+- **GitPython**: Git repository operations
+- **SQLite**: Local database storage
+
+## Quick Start
+
+### Prerequisites
+- Python 3.8+
+- Git
+- Azure OpenAI API access
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd Aether2
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` with your Azure OpenAI credentials:
+   ```env
+   AZURE_OPENAI_API_KEY=your_api_key_here
+   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment_name
+   ```
+
+4. **Run the application**
+   ```bash
+   python app.py
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:5000`
+
+## Configuration
+
+### Required Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `AZURE_OPENAI_API_KEY` | Your Azure OpenAI API key | `abc123...` |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint URL | `https://myresource.openai.azure.com/` |
+| `AZURE_OPENAI_DEPLOYMENT_NAME` | Deployment name in Azure | `gpt-4` |
+
+### Optional Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AZURE_OPENAI_API_VERSION` | API version | `2024-02-15-preview` |
+| `FLASK_SECRET_KEY` | Flask secret key | Auto-generated |
+| `FLASK_DEBUG` | Debug mode | `False` |
+| `FLASK_HOST` | Server host | `127.0.0.1` |
+| `FLASK_PORT` | Server port | `5000` |
+| `SQLALCHEMY_DATABASE_URI` | Database URI | `sqlite:///aethercode.db` |
 
 ## Project Structure
 
 ```
-AetherCode/
-├── index.html          # Main HTML file
-├── css/
-│   └── styles.css      # Styling for the application
-├── js/
-│   ├── animations.js   # Background and typing animations
-│   ├── editor.js       # CodeMirror editor functionality
-│   └── main.js         # Core application logic
-├── backend/            # Flask backend
-│   ├── app.py          # Main Flask application
-│   ├── services/       # Backend services
-│   │   ├── ai_service.py     # AI chat and code analysis
-│   │   └── code_analyzer.py  # Code quality analysis
-│   ├── requirements.txt # Python dependencies
-│   └── .env            # Environment variables
-└── README.md           # Project documentation
+Aether2/
+├── app.py                      # Main Flask application
+├── models.py                   # Database models
+├── requirements.txt            # Python dependencies
+├── .env.example               # Environment variables template
+├── index.html                 # Main HTML file
+├── static/
+│   ├── css/
+│   │   ├── style.css          # Main styles
+│   │   └── file-explorer.css  # File explorer styles
+│   └── js/
+│       └── script.js          # Frontend JavaScript
+├── services/
+│   ├── ai_service.py          # Azure OpenAI integration
+│   └── repo_service.py        # Git repository operations
+├── blueprints/
+│   ├── repo_bp.py             # Repository API endpoints
+│   └── ai_bp.py               # AI chat and reports API
+├── temp_repos/                # Temporary repository storage
+└── logs/                      # Application logs
 ```
-
-## Getting Started
-
-### Frontend
-1. Clone this repository
-2. Open `index.html` in your browser or use a simple HTTP server:
-   ```
-   python -m http.server 8000
-   ```
-3. Access the application at `http://localhost:8000`
-
-### Backend
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
-2. Install the required Python packages:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Set up your OpenAI API key in the `.env` file:
-   ```
-   OPENAI_API_KEY=your_api_key_here
-   ```
-4. Start the Flask server:
-   ```
-   python app.py
-   ```
-5. The backend will be available at `http://localhost:5000`
 
 ## API Endpoints
 
-- **POST /api/analyze**: Analyze code and provide feedback
-- **POST /api/chat**: Process chat messages with AI
-- **POST /api/upload**: Handle single file uploads
-- **POST /api/project**: Handle multiple file/project uploads
+### Repository Management
+- `POST /api/repo/analyze` - Analyze a GitHub repository
+- `GET /api/repo/<project_id>/file` - Get file content
+- `GET /api/repo/<project_id>/structure` - Get repository structure
+- `GET /api/repo/<project_id>/info` - Get project information
+- `DELETE /api/repo/<project_id>` - Delete project
 
-## Technologies Used
+### AI Services
+- `POST /api/ai/chat` - Chat with AI about the repository
+- `GET /api/ai/reports/<project_id>` - Generate comprehensive reports
+- `GET /api/ai/conversation/<project_id>` - Get conversation history
+- `POST /api/ai/regenerate-tech-spec/<project_id>` - Regenerate technical specification
+- `GET /api/ai/status` - Check AI service status
 
-### Frontend
-- HTML5
-- CSS3 (with modern animations and flexbox layout)
-- Vanilla JavaScript (ES6+)
-- CodeMirror 5.x (code editor with syntax highlighting)
-- js-beautify (code formatting)
-- Font Awesome for icons
-- Google Fonts for typography
+### Health Check
+- `GET /health` - Application health status
 
-### Backend
-- Flask (Python web framework)
-- Flask-CORS (Cross-Origin Resource Sharing)
-- OpenAI API (for AI code analysis and chat)
-- Python-dotenv (environment variable management)
+## Usage
 
-## Browser Compatibility
+1. **Start Analysis**: Enter a public GitHub repository URL on the landing page
+2. **Explore Code**: Use the file explorer to browse the repository structure
+3. **Chat with AI**: Ask questions about the codebase in the chat interface
+4. **Review Reports**: Generate and view technical specifications, code health reports, and insights
+5. **Export Results**: Download comprehensive reports for documentation
 
-The application is designed to work with modern browsers including:
-- Chrome
-- Firefox
-- Safari
-- Edge
+## Security Features
+
+- **Public Repositories Only**: No authentication required for GitHub access
+- **Environment Variables**: Secure configuration management
+- **Input Validation**: Comprehensive request validation
+- **Error Handling**: Robust error management and logging
+- **CORS Protection**: Configured cross-origin resource sharing
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Azure OpenAI Connection Errors**
+   - Verify your API key and endpoint are correct
+   - Check your Azure OpenAI deployment is active
+   - Ensure you have sufficient quota
+
+2. **Repository Clone Failures**
+   - Verify the GitHub URL is public and accessible
+   - Check your internet connection
+   - Ensure sufficient disk space
+
+3. **Database Issues**
+   - Check file permissions for SQLite database
+   - Verify the database directory is writable
+
+### Logs
+Check `logs/aethercode.log` for detailed error information.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Azure OpenAI for AI capabilities
+- Flask community for the excellent framework
+- GitHub for repository hosting and API access

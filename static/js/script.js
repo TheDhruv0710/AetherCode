@@ -1,0 +1,400 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Constants ---
+    const API_BASE_URL = 'http://127.0.0.1:5000/api';
+
+    // --- DOM Elements ---
+    const landingScreen = document.getElementById('landing-screen');
+    const repoUrlInput = document.getElementById('repo-url');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const dashboard = document.getElementById('dashboard');
+    const projectInfo = document.getElementById('project-info');
+    const newAnalysisBtn = document.getElementById('new-analysis-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const fileExplorer = document.getElementById('file-explorer');
+    const codeViewer = document.getElementById('code-viewer');
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const techSpecModal = document.getElementById('tech-spec-modal');
+    const techSpecContent = document.getElementById('tech-spec-content');
+    const reportsModal = document.getElementById('reports-modal');
+    const continueBtn = document.getElementById('continue-to-dashboard-btn');
+    const reportsContent = document.getElementById('reports-content');
+    const liveMinutes = document.getElementById('live-minutes');
+    const todoList = document.getElementById('todo-list');
+
+    // --- State ---
+    let currentProjectId = null;
+    let currentRepoUrl = null;
+
+    // --- Helper Functions ---
+    async function handleApiError(response) {
+        let errorMessage = `HTTP error! Status: ${response.status}`;
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || 'An unknown error occurred.';
+            if (errorData.details) {
+                errorMessage += `\nDetails: ${errorData.details}`;
+            }
+        } catch (e) {
+            // Response was not JSON or couldn't be parsed, use the default message
+        }
+        return errorMessage;
+    }
+
+    // --- Event Listeners ---
+    analyzeBtn.addEventListener('click', handleRepoAnalysis);
+    newAnalysisBtn.addEventListener('click', resetToLandingScreen);
+    exportBtn.addEventListener('click', fetchAndShowReports);
+    sendBtn.addEventListener('click', handleSendMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    });
+
+    // Modal event listeners
+    continueBtn.addEventListener('click', () => {
+        techSpecModal.style.display = 'none';
+        showDashboard();
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === techSpecModal) {
+            techSpecModal.style.display = 'none';
+        }
+        if (e.target === reportsModal) {
+            reportsModal.style.display = 'none';
+        }
+    });
+
+    // Close buttons
+    document.querySelectorAll('.close-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+
+    // --- API & Core Functions ---
+    async function handleRepoAnalysis() {
+        const url = repoUrlInput.value.trim();
+        if (!url) {
+            alert('Please enter a GitHub repository URL.');
+            return;
+        }
+
+        setLoading(analyzeBtn, 'Analyzing...', true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/repo/analyze`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repo_url: url })
+            });
+
+            if (!response.ok) {
+                const errorMessage = await handleApiError(response);
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            currentProjectId = data.project_id;
+            currentRepoUrl = url;
+
+            // Show tech spec modal
+            techSpecContent.textContent = data.tech_spec || 'Technical specification generated successfully.';
+            techSpecModal.style.display = 'block';
+
+            // Update project info and file explorer
+            projectInfo.textContent = `Project: ${url.split('/').pop()}`;
+            if (data.files) {
+                updateFileExplorer(data.files);
+            }
+
+        } catch (error) {
+            console.error('Error analyzing repository:', error);
+            alert(`Error analyzing repository: ${error.message}`);
+        } finally {
+            setLoading(analyzeBtn, 'Analyze', false);
+        }
+    }
+
+    async function loadFileContent(path) {
+        if (!currentProjectId) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/repo/${currentProjectId}/file?path=${encodeURIComponent(path)}`);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to load file: ${response.status}`);
+            }
+
+            const data = await response.json();
+            showCode(data.content);
+
+        } catch (error) {
+            console.error('Error loading file:', error);
+            showCode(`// Error loading file: ${error.message}`);
+        }
+    }
+
+    async function handleSendMessage() {
+        const message = userInput.value.trim();
+        if (!message || !currentProjectId) return;
+
+        displayUserMessage(message);
+        userInput.value = '';
+        setLoading(sendBtn, '', true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/ai/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_id: currentProjectId,
+                    message: message
+                })
+            });
+
+            if (!response.ok) {
+                const errorMessage = await handleApiError(response);
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            displayAIMessage(data.response);
+
+            // Update session notes if provided
+            if (data.mom || data.insights) {
+                updateSessionNotes(data.mom, data.insights);
+            }
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            displayAIMessage(`Error: ${error.message}`);
+        } finally {
+            setLoading(sendBtn, '', false);
+        }
+    }
+
+    async function fetchAndShowReports() {
+        if (!currentProjectId) {
+            alert('No project selected.');
+            return;
+        }
+
+        setLoading(exportBtn, 'Generating...', true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/ai/reports/${currentProjectId}`);
+            
+            if (!response.ok) {
+                const errorMessage = await handleApiError(response);
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            reportsContent.innerHTML = `
+                <h3>Code Health Report</h3>
+                <pre>${data.code_health_report || 'No report available.'}</pre>
+                <h3>Meeting Minutes</h3>
+                <pre>${data.mom_content || 'No minutes available.'}</pre>
+                <h3>Insights</h3>
+                <pre>${data.insights_content || 'No insights available.'}</pre>
+            `;
+            reportsModal.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error fetching reports:', error);
+            alert(`Error fetching reports: ${error.message}`);
+        } finally {
+            setLoading(exportBtn, 'Export Reports', false);
+        }
+    }
+
+    // --- UI Update Functions ---
+    function showDashboard() {
+        landingScreen.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+    }
+
+    function resetToLandingScreen() {
+        dashboard.classList.add('hidden');
+        landingScreen.classList.remove('hidden');
+        
+        // Reset state
+        currentProjectId = null;
+        currentRepoUrl = null;
+        repoUrlInput.value = '';
+        projectInfo.textContent = 'Project: Not Selected';
+        chatContainer.innerHTML = '<div class="welcome-message"><p>Welcome to AetherCode! I\'ll analyze your code and ask relevant questions to help improve it.</p></div>';
+        fileExplorer.innerHTML = '<div class="file-tree-placeholder">Repository files will appear here...</div>';
+        codeViewer.innerHTML = '<pre><code>// Selected code will appear here</code></pre>';
+        liveMinutes.innerHTML = '<p class="minutes-placeholder">Discussion points will appear as you chat with the AI...</p>';
+        todoList.innerHTML = '<li class="todo-placeholder">Action items will be added here...</li>';
+    }
+
+    function displayUserMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message';
+        messageDiv.textContent = message;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function displayAIMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ai-message';
+        messageDiv.textContent = message;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function updateFileExplorer(items) {
+        fileExplorer.innerHTML = renderFileTree(items);
+        addFileTreeEventListeners();
+    }
+
+    function updateSessionNotes(mom, insights) {
+        if (mom) liveMinutes.innerHTML = `<p>${mom}</p>`;
+        if (insights) {
+            const todoItems = insights.split('\n').filter(item => item.trim());
+            todoList.innerHTML = todoItems.map(item => `<li>${item}</li>`).join('');
+        }
+    }
+
+    function showCode(codeSnippet) {
+        codeViewer.innerHTML = `<pre><code>${codeSnippet}</code></pre>`;
+    }
+
+    function setLoading(button, text, isLoading = true) {
+        if (isLoading) {
+            button.disabled = true;
+            button.classList.add('loading');
+            if (text) button.textContent = text;
+        } else {
+            button.disabled = false;
+            button.classList.remove('loading');
+            if (text) button.textContent = text;
+        }
+    }
+
+    // --- Render Functions ---
+    function renderFileTree(items) {
+        if (!items || items.length === 0) {
+            return '<div class="file-tree-placeholder">No files found in repository.</div>';
+        }
+
+        return `<div class="file-tree">${items.map(item => renderFileItem(item)).join('')}</div>`;
+    }
+
+    function renderFileItem(item) {
+        const isFolder = item.type === 'dir';
+        const iconClass = getFileIconClass(item.name);
+        const hasChildren = item.children && item.children.length > 0;
+
+        return `
+            <div class="file-item ${isFolder ? 'folder' : 'file'}" data-path="${item.path}" data-type="${item.type}">
+                ${isFolder && hasChildren ? '<span class="folder-toggle"></span>' : '<span class="folder-toggle" style="visibility: hidden;"></span>'}
+                <span class="file-icon ${iconClass}">
+                    <i class="fas ${isFolder ? 'fa-folder' : getFileIcon(item.name)}"></i>
+                </span>
+                <span class="file-name">${item.name}</span>
+            </div>
+            ${hasChildren ? `<div class="file-children collapsed">${item.children.map(child => renderFileItem(child)).join('')}</div>` : ''}
+        `;
+    }
+
+    function getFileIconClass(fileName) {
+        const ext = fileName.split('.').pop().toLowerCase();
+        const iconMap = {
+            'js': 'javascript',
+            'ts': 'typescript',
+            'py': 'python',
+            'css': 'css',
+            'html': 'html',
+            'htm': 'html',
+            'json': 'json',
+            'md': 'markdown',
+            'txt': 'text',
+            'png': 'image',
+            'jpg': 'image',
+            'jpeg': 'image',
+            'gif': 'image',
+            'svg': 'image'
+        };
+        return iconMap[ext] || 'text';
+    }
+
+    function getFileIcon(fileName) {
+        const ext = fileName.split('.').pop().toLowerCase();
+        const iconMap = {
+            'js': 'fa-file-code',
+            'ts': 'fa-file-code',
+            'py': 'fa-file-code',
+            'css': 'fa-file-code',
+            'html': 'fa-file-code',
+            'htm': 'fa-file-code',
+            'json': 'fa-file-code',
+            'md': 'fa-file-text',
+            'txt': 'fa-file-text',
+            'png': 'fa-file-image',
+            'jpg': 'fa-file-image',
+            'jpeg': 'fa-file-image',
+            'gif': 'fa-file-image',
+            'svg': 'fa-file-image'
+        };
+        return iconMap[ext] || 'fa-file';
+    }
+
+    function addFileTreeEventListeners() {
+        // File/folder click handlers
+        document.querySelectorAll('.file-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Remove previous selection
+                document.querySelectorAll('.file-item.selected').forEach(selected => {
+                    selected.classList.remove('selected');
+                });
+                
+                // Add selection to clicked item
+                item.classList.add('selected');
+                
+                const path = item.dataset.path;
+                const type = item.dataset.type;
+                
+                if (type === 'file') {
+                    loadFileContent(path);
+                } else if (type === 'dir') {
+                    // Toggle folder
+                    const toggle = item.querySelector('.folder-toggle');
+                    const children = item.nextElementSibling;
+                    
+                    if (children && children.classList.contains('file-children')) {
+                        children.classList.toggle('collapsed');
+                        toggle.classList.toggle('expanded');
+                    }
+                }
+            });
+        });
+
+        // Folder toggle handlers
+        document.querySelectorAll('.folder-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const item = toggle.closest('.file-item');
+                const children = item.nextElementSibling;
+                
+                if (children && children.classList.contains('file-children')) {
+                    children.classList.toggle('collapsed');
+                    toggle.classList.toggle('expanded');
+                }
+            });
+        });
+    }
+});
