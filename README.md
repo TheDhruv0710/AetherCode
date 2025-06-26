@@ -179,40 +179,6 @@ Check `logs/aethercode.log` for detailed error information.
 
 
 
-
-class GenAi:
-    def __init__(self, link_data):
-        model_name = os.getenv("model_name")
-        deployment_name = os.getenv("deployment_name")
-        print(link_data)
-
-        os.environ['OPENAI_API_TYPE'] = os.getenv("api_type")
-        os.environ['AZURE_OPENAI_ENDPOINT'] = os.getenv("api_base")
-        os.environ['OPENAI_API_KEY'] = os.getenv("api_key")
-        os.environ['OPENAI_API_VERSION'] = os.getenv("api_version")
-        self.model = AzureChatOpenAI(
-            deployment_name=deployment_name,
-            model_name=model_name
-        )
-        self.link_data = link_data
-        print(f"prompt_template: {os.getenv('prompt_template')}")
-        self.prompt_template = PromptTemplate(
-            input_variables=["link_data"],
-            template=os.getenv("prompt_template"),
-        )
-
-        self.chain = self.prompt_template | self.model
-
-    def generate_response(self, message):
-        prompt_input = {
-            "link_data": self.link_data,
-            "message": message
-        }
-        response = self.chain.invoke(prompt_input)
-        return response.content
-
-
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
