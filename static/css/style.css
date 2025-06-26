@@ -731,3 +731,377 @@ button:focus, input:focus {
         font-size: 15px;
     }
 }
+
+/* Thinking Animation */
+.thinking-animation {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.thinking-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.thinking-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.thinking-dots span {
+    width: 8px;
+    height: 8px;
+    background: #8B5CF6;
+    border-radius: 50%;
+    animation: thinking-bounce 1.4s infinite ease-in-out both;
+}
+
+.thinking-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.thinking-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.thinking-text {
+    color: #8B5CF6;
+    font-style: italic;
+    font-size: 14px;
+}
+
+@keyframes thinking-bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+    }
+}
+
+/* Animated Greeting Overlay */
+.greeting-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(139, 92, 246, 0.1));
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.greeting-overlay.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.greeting-overlay.fade-out {
+    opacity: 0;
+    transform: scale(1.1);
+    transition: all 0.8s ease-in;
+}
+
+.greeting-container {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(139, 92, 246, 0.05));
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+    animation: greeting-float 6s ease-in-out infinite;
+}
+
+.greeting-icon {
+    margin-bottom: 30px;
+}
+
+.digital-core-greeting {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.digital-core-greeting .core-ring {
+    position: absolute;
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    animation: core-spin 3s linear infinite;
+}
+
+.digital-core-greeting .ring-1 {
+    width: 120px;
+    height: 120px;
+    top: 0;
+    left: 0;
+    animation-duration: 4s;
+}
+
+.digital-core-greeting .ring-2 {
+    width: 90px;
+    height: 90px;
+    top: 15px;
+    left: 15px;
+    animation-duration: 3s;
+    animation-direction: reverse;
+}
+
+.digital-core-greeting .ring-3 {
+    width: 60px;
+    height: 60px;
+    top: 30px;
+    left: 30px;
+    animation-duration: 2s;
+}
+
+.digital-core-greeting .core-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    color: #8B5CF6;
+    animation: core-pulse 2s ease-in-out infinite;
+}
+
+.greeting-title {
+    font-size: 2.5em;
+    font-weight: 700;
+    background: linear-gradient(135deg, #8B5CF6, #A855F7, #C084FC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    animation: title-glow 3s ease-in-out infinite;
+}
+
+.greeting-subtitle {
+    margin-bottom: 30px;
+    font-size: 1.2em;
+}
+
+.project-label {
+    color: #b0b0b0;
+    margin-right: 10px;
+}
+
+.project-name {
+    color: #8B5CF6;
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.greeting-message {
+    margin-bottom: 30px;
+}
+
+.greeting-message p {
+    color: #d0d0d0;
+    margin: 10px 0;
+    font-size: 1.1em;
+    opacity: 0;
+    animation: message-fade-in 0.8s ease-out forwards;
+}
+
+.greeting-message p:nth-child(1) {
+    animation-delay: 1s;
+}
+
+.greeting-message p:nth-child(2) {
+    animation-delay: 1.5s;
+}
+
+.greeting-message p:nth-child(3) {
+    animation-delay: 2s;
+}
+
+.greeting-action p {
+    color: #ffffff;
+    font-size: 1.2em;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.greeting-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #8B5CF6, #A855F7);
+    width: 0%;
+    animation: progress-fill 3s ease-out forwards;
+    animation-delay: 1s;
+}
+
+/* Welcome Message Styling */
+.welcome-message {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.05));
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+    animation: welcome-slide-in 1s ease-out;
+}
+
+.welcome-message h3 {
+    color: #8B5CF6;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.welcome-message ul {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.welcome-message li {
+    padding: 8px 0;
+    color: #d0d0d0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.welcome-message li:last-child {
+    border-bottom: none;
+}
+
+.welcome-message strong {
+    color: #A855F7;
+}
+
+/* Animations */
+@keyframes greeting-float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes core-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes core-pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        text-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+    }
+}
+
+@keyframes title-glow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
+    }
+}
+
+@keyframes message-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes progress-fill {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes welcome-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .greeting-container {
+        max-width: 90%;
+        padding: 30px 20px;
+    }
+    
+    .greeting-title {
+        font-size: 2em;
+    }
+    
+    .digital-core-greeting {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .digital-core-greeting .ring-1 {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .digital-core-greeting .ring-2 {
+        width: 60px;
+        height: 60px;
+        top: 10px;
+        left: 10px;
+    }
+    
+    .digital-core-greeting .ring-3 {
+        width: 40px;
+        height: 40px;
+        top: 20px;
+        left: 20px;
+    }
+    
+    .digital-core-greeting .core-center {
+        font-size: 24px;
+    }
+}

@@ -105,9 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentProjectId = data.project_id;
             currentRepoUrl = url;
 
-            // Show tech spec modal
-            techSpecContent.textContent = data.tech_spec || 'Technical specification generated successfully.';
-            techSpecModal.style.display = 'block';
+            // Show animated greeting instead of tech spec modal
+            showAnalysisGreeting(url.split('/').pop());
 
             // Update project info and file explorer
             projectInfo.textContent = `Project: ${url.split('/').pop()}`;
@@ -151,6 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(sendBtn, '', true);
 
         try {
+            const thinkingId = addThinkingAnimation();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Add a delay
+
             const response = await fetch(`${API_BASE_URL}/ai/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -166,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
+            removeThinkingAnimation(thinkingId);
             displayAIMessage(data.response);
 
             // Update session notes if provided
@@ -466,5 +469,111 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+    }
+
+    function addThinkingAnimation() {
+        const thinkingId = 'thinking-' + Date.now();
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.id = thinkingId;
+        thinkingDiv.className = 'message assistant-message thinking-animation';
+        thinkingDiv.innerHTML = `
+            <div class="thinking-content">
+                <div class="thinking-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="thinking-text">Analyzing your question...</span>
+            </div>
+        `;
+        
+        chatContainer.appendChild(thinkingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        return thinkingId;
+    }
+
+    function removeThinkingAnimation(thinkingId) {
+        const thinkingElement = document.getElementById(thinkingId);
+        if (thinkingElement) {
+            thinkingElement.remove();
+        }
+    }
+
+    function showAnalysisGreeting(projectName) {
+        // Create animated greeting overlay
+        const greetingOverlay = document.createElement('div');
+        greetingOverlay.className = 'greeting-overlay';
+        greetingOverlay.innerHTML = `
+            <div class="greeting-container">
+                <div class="greeting-icon">
+                    <div class="digital-core-greeting">
+                        <div class="core-ring ring-1"></div>
+                        <div class="core-ring ring-2"></div>
+                        <div class="core-ring ring-3"></div>
+                        <div class="core-center">⚡</div>
+                    </div>
+                </div>
+                <div class="greeting-content">
+                    <h1 class="greeting-title">Repository Analysis Complete!</h1>
+                    <div class="greeting-subtitle">
+                        <span class="project-label">Project:</span>
+                        <span class="project-name">${projectName}</span>
+                    </div>
+                    <div class="greeting-message">
+                        <p>✨ Code structure analyzed</p>
+                        <p>🔍 Files indexed and ready</p>
+                        <p>🤖 AI assistant initialized</p>
+                    </div>
+                    <div class="greeting-action">
+                        <p>Ready to start your code review session!</p>
+                        <div class="greeting-progress">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(greetingOverlay);
+        
+        // Animate the greeting sequence
+        setTimeout(() => {
+            greetingOverlay.classList.add('show');
+        }, 100);
+        
+        // Auto-dismiss after 4 seconds and show dashboard
+        setTimeout(() => {
+            greetingOverlay.classList.add('fade-out');
+            setTimeout(() => {
+                document.body.removeChild(greetingOverlay);
+                showDashboard();
+                
+                // Add welcome message to chat
+                addWelcomeMessage(projectName);
+            }, 800);
+        }, 4000);
+    }
+
+    function addWelcomeMessage(projectName) {
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.className = 'message assistant-message welcome-message';
+        welcomeDiv.innerHTML = `
+            <div class="message-content">
+                <h3>🎉 Welcome to your ${projectName} code review session!</h3>
+                <p>I've successfully analyzed your repository and I'm ready to help you improve your code. Here's what we can explore together:</p>
+                <ul>
+                    <li>📋 <strong>Code Structure</strong> - Discuss architecture and organization</li>
+                    <li>🛡️ <strong>Error Handling</strong> - Review exception management</li>
+                    <li>🧪 <strong>Testing Strategy</strong> - Plan comprehensive test coverage</li>
+                    <li>🚀 <strong>Improvements</strong> - Identify enhancement opportunities</li>
+                    <li>📚 <strong>Documentation</strong> - Enhance code documentation</li>
+                </ul>
+                <p><strong>💡 Try asking:</strong> "Hello, can you analyze this?" or "Tell me about the code structure"</p>
+            </div>
+        `;
+        
+        chatContainer.appendChild(welcomeDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 });

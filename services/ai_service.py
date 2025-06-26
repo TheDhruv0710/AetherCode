@@ -3,6 +3,7 @@ import json
 import logging
 from typing import List, Dict, Any, Optional
 from openai import AzureOpenAI
+import openai
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,9 @@ class AzureOpenAIService:
         self.test_mode = False
         
         try:
+            # Log openai library version for debugging
+            logger.info(f"OpenAI library version: {openai.__version__}")
+            
             # Check if required environment variables are set
             api_key = os.getenv('AZURE_OPENAI_API_KEY')
             endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
@@ -40,12 +44,40 @@ class AzureOpenAIService:
                 return
             
             # Try to initialize the client
-            self.client = AzureOpenAI(
-                api_key=api_key,
-                api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
-                azure_endpoint=endpoint
-            )
-            self.deployment_name = deployment
+            try:
+                self.client = AzureOpenAI(
+                    api_key=api_key,
+                    api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
+                    azure_endpoint=endpoint
+                )
+                self.deployment_name = deployment
+                logger.info("Azure OpenAI client initialized successfully")
+                
+            except TypeError as init_error:
+                logger.error(f"Azure OpenAI client initialization failed with TypeError: {init_error}")
+                logger.info("Trying alternative initialization method...")
+                
+                # Try alternative initialization for older versions
+                try:
+                    self.client = AzureOpenAI(
+                        api_key=api_key,
+                        api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
+                        base_url=f"{endpoint.rstrip('/')}/openai/deployments/{deployment}"
+                    )
+                    self.deployment_name = deployment
+                    logger.info("Azure OpenAI client initialized with alternative method")
+                    
+                except Exception as alt_error:
+                    logger.error(f"Alternative initialization also failed: {alt_error}")
+                    logger.warning("Falling back to test mode due to client initialization failure")
+                    self.test_mode = True
+                    return
+            
+            except Exception as init_error:
+                logger.error(f"Azure OpenAI client initialization failed: {init_error}")
+                logger.warning("Falling back to test mode due to client initialization failure")
+                self.test_mode = True
+                return
             
             # Test the connection with a simple call
             try:
@@ -72,37 +104,55 @@ class AzureOpenAIService:
         """Generate test responses when Azure OpenAI is not available"""
         
         if prompt_type == 'chat':
-            # Generate calculator-specific chat responses
-            calculator_responses = [
-                "I can see this is a Python calculator application! The code structure looks clean with separate functions for different mathematical operations. The implementation appears to handle basic arithmetic operations like addition, subtraction, multiplication, and division.",
-                
-                "This calculator project follows good Python practices! I notice it has proper function definitions and likely includes error handling for division by zero. The code organization suggests it's designed for educational purposes, which is great for learning programming concepts.",
-                
-                "Looking at this calculator implementation, it appears to be a console-based application. The structure suggests it uses functions to perform calculations and probably has a main loop for user interaction. This is an excellent example of procedural programming in Python!",
-                
-                "This Python calculator demonstrates fundamental programming concepts beautifully! I can see it implements basic mathematical operations with clean function definitions. The code structure indicates good separation of concerns between calculation logic and user interface.",
-                
-                "Great calculator project! The Python implementation appears to handle the four basic arithmetic operations. I notice the code follows standard Python conventions and likely includes input validation to handle edge cases like division by zero.",
-                
-                "This calculator application showcases essential Python programming skills! The implementation seems to focus on core mathematical operations with proper function organization. It's a perfect example for demonstrating programming fundamentals to beginners."
-            ]
+            # Scripted conversation flow for realistic demo
+            context_lower = context.lower()
             
-            # Context-aware responses for specific questions
-            if "function" in context.lower() or "method" in context.lower():
-                return "The calculator uses well-defined functions for each mathematical operation - add(), subtract(), multiply(), and divide(). Each function takes parameters and returns the calculated result. This modular approach makes the code maintainable and reusable!"
+            # Initial greeting and analysis
+            if any(word in context_lower for word in ['hello', 'hi', 'start', 'analyze']):
+                return "Hello! I've analyzed your Python calculator repository. This is a well-structured educational project! I can see it implements basic arithmetic operations with clean function-based architecture. What specific aspect would you like to discuss first - the code structure, error handling, or potential improvements?"
             
-            elif "error" in context.lower() or "exception" in context.lower():
-                return "Good question about error handling! The calculator should include proper exception handling, especially for division by zero operations. This prevents the program from crashing and provides user-friendly error messages."
+            # Code structure questions
+            elif any(word in context_lower for word in ['structure', 'architecture', 'organization']):
+                return "Great question about the code structure! The calculator uses a clean function-based approach where each mathematical operation (add, subtract, multiply, divide) is implemented as a separate function. This modular design makes the code easy to understand and maintain. Would you like me to elaborate on any specific function or discuss how we could enhance this architecture?"
             
-            elif "improve" in context.lower() or "enhance" in context.lower():
-                return "There are several ways to enhance this calculator: add more advanced operations (square root, power, trigonometric functions), implement a GUI interface using tkinter, add memory functions, or create a history feature to track previous calculations!"
+            # Error handling discussion
+            elif any(word in context_lower for word in ['error', 'exception', 'handling', 'zero']):
+                return "Excellent point about error handling! The calculator should include robust exception handling, especially for division by zero scenarios. Currently, I can see the basic structure, but we could improve it by adding try-catch blocks and user-friendly error messages. What's your experience with implementing error handling in Python projects?"
             
-            elif "test" in context.lower():
-                return "Testing this calculator is crucial! You could add unit tests for each mathematical function, test edge cases like division by zero, verify input validation, and ensure the user interface handles invalid inputs gracefully."
+            # Testing questions
+            elif any(word in context_lower for word in ['test', 'testing', 'unit', 'pytest']):
+                return "Testing is crucial for a calculator application! I'd recommend implementing unit tests for each mathematical function using pytest. We should test normal cases, edge cases like division by zero, and input validation. Have you worked with automated testing frameworks before, or would you like me to suggest a testing strategy?"
             
-            # Return a random response for variety
-            import random
-            return random.choice(calculator_responses)
+            # Improvement suggestions
+            elif any(word in context_lower for word in ['improve', 'enhance', 'better', 'features']):
+                return "There are several exciting ways to enhance this calculator! We could add a GUI using tkinter, implement scientific functions (sqrt, sin, cos), add memory features, or create a calculation history. We could also improve input validation and add support for complex expressions. Which enhancement interests you most?"
+            
+            # GUI questions
+            elif any(word in context_lower for word in ['gui', 'interface', 'tkinter', 'visual']):
+                return "A GUI would definitely improve user experience! Tkinter is perfect for this calculator - we could create buttons for each operation, a display screen, and even add keyboard support. The current function-based structure would work well with GUI event handlers. Are you familiar with tkinter, or would you prefer a web-based interface?"
+            
+            # Performance questions
+            elif any(word in context_lower for word in ['performance', 'speed', 'optimize']):
+                return "For a basic calculator, performance is already excellent since arithmetic operations are very fast. However, if we add scientific functions or complex number support, we might want to consider optimization. The current design is efficient for its scope. Are you planning to add more computationally intensive features?"
+            
+            # Documentation questions
+            elif any(word in context_lower for word in ['document', 'comment', 'readme']):
+                return "Documentation is important for educational projects! I'd suggest adding detailed docstrings to each function explaining parameters and return values, plus inline comments for complex logic. A comprehensive README with usage examples would help other learners. How detailed do you want the documentation to be?"
+            
+            # Security questions
+            elif any(word in context_lower for word in ['security', 'safe', 'input']):
+                return "Good thinking about security! For a calculator, the main concerns are input validation and preventing code injection. We should validate that inputs are numeric and handle malformed expressions safely. The current design is relatively secure since it's not web-facing. Are you planning to deploy this online?"
+            
+            # General positive responses for other inputs
+            else:
+                responses = [
+                    "That's an interesting perspective! The calculator's design shows good programming fundamentals. What specific aspect would you like to explore further?",
+                    "I appreciate your question! This calculator project demonstrates solid Python concepts. Is there a particular feature or improvement you'd like to discuss?",
+                    "Good observation! The code structure is quite educational. Would you like to dive deeper into any specific function or discuss potential enhancements?",
+                    "Excellent point! This calculator serves as a great learning tool. What would you like to focus on - testing, documentation, or adding new features?"
+                ]
+                import random
+                return random.choice(responses)
             
         elif prompt_type == 'tech_spec':
             return f"""# Python Calculator - Technical Specification
@@ -682,3 +732,208 @@ Please generate a comprehensive insights and recommendations report."""
         ]
 
         return self.chat_completion(messages, max_tokens=2500)
+
+    def chat(self, message: str, session_id: int) -> dict:
+        """Chat with AI assistant"""
+        if self.test_mode:
+            # Simulate thinking time for realistic feel
+            import time
+            time.sleep(2.5)  # Add realistic delay
+            
+            # Get conversation history for context
+            from models import Message
+            messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
+            conversation_history = [{"role": msg.role, "content": msg.content} for msg in messages]
+            
+            # Generate contextual response
+            response = self._get_test_response('chat', message)
+            
+            # Generate real meeting minutes from conversation
+            mom_content = self._generate_real_meeting_minutes(conversation_history, message)
+            
+            # Generate real action items or set to None
+            insights_content = self._generate_real_insights(conversation_history, message)
+            
+            return {
+                "response": response,
+                "mom_update": mom_content,
+                "insights_update": insights_content
+            }
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=[
+                    {"role": "system", "content": "You are a helpful AI code reviewer assistant."},
+                    {"role": "user", "content": message}
+                ],
+                max_tokens=500,
+                temperature=0.7
+            )
+            
+            # Extract discussion points and action items from response
+            discussion_points = []
+            action_items = []
+            for line in response.choices[0].message.content.split('\n'):
+                if line.startswith('Discussion Point:'):
+                    discussion_points.append(line[17:])
+                elif line.startswith('Action Item:'):
+                    action_items.append(line[12:])
+            
+            return {
+                "response": response.choices[0].message.content,
+                "mom_update": f"Discussed: {message[:50]}...",
+                "insights_update": f"Insight: {', '.join(discussion_points)}",
+                "discussion_points": discussion_points,
+                "action_items": action_items
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in chat: {e}")
+            return {
+                "response": f"Error: {str(e)}",
+                "mom_update": "",
+                "insights_update": ""
+            }
+    
+    def _generate_real_meeting_minutes(self, conversation_history: list, current_message: str) -> str:
+        """Generate real meeting minutes from conversation history"""
+        if not conversation_history:
+            return "Meeting started - Python Calculator code review session initiated."
+        
+        # Format conversation as Q&A
+        qa_pairs = []
+        for i in range(0, len(conversation_history), 2):
+            if i + 1 < len(conversation_history):
+                question = conversation_history[i]['content']
+                answer = conversation_history[i + 1]['content']
+                qa_pairs.append(f"Q: {question}\nA: {answer[:100]}...")
+        
+        if qa_pairs:
+            return f"Discussion Points:\n" + "\n\n".join(qa_pairs[-3:])  # Show last 3 Q&A pairs
+        else:
+            return f"Current Discussion: {current_message}"
+    
+    def _generate_real_insights(self, conversation_history: list, current_message: str) -> str:
+        """Generate real insights or return None if no significant insights"""
+        if len(conversation_history) < 2:
+            return "N/A - Insufficient conversation data"
+        
+        # Generate insights based on conversation patterns
+        insights = []
+        
+        # Check for common topics
+        all_content = " ".join([msg['content'].lower() for msg in conversation_history])
+        
+        if "function" in all_content or "method" in all_content:
+            insights.append("Focus on function-based architecture")
+        
+        if "error" in all_content or "exception" in all_content:
+            insights.append("Error handling is a key concern")
+        
+        if "test" in all_content:
+            insights.append("Testing strategy needs attention")
+        
+        if "improve" in all_content or "enhance" in all_content:
+            insights.append("Enhancement opportunities identified")
+        
+        if insights:
+            return "Key Insights: " + ", ".join(insights)
+        else:
+            return "N/A - No significant patterns identified yet"
+
+    def generate_tech_spec(self, repo_structure: str, file_contents: dict) -> str:
+        """Generate technical specification document"""
+        if self.test_mode:
+            return self._get_test_response('tech_spec')
+        
+        try:
+            messages = [
+                {"role": "system", "content": "You are a technical documentation expert. Generate a comprehensive technical specification document."},
+                {"role": "user", "content": f"Generate a technical specification for this repository:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.3
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating tech spec: {e}")
+            return f"Error generating technical specification: {str(e)}"
+    
+    def generate_code_health_report(self, repo_structure: str, file_contents: dict) -> str:
+        """Generate code health report"""
+        if self.test_mode:
+            return self._get_test_response('code_health')
+        
+        try:
+            messages = [
+                {"role": "system", "content": "You are a code quality expert. Analyze the code and generate a comprehensive health report."},
+                {"role": "user", "content": f"Analyze this repository and generate a code health report:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.3
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating code health report: {e}")
+            return f"Error generating code health report: {str(e)}"
+    
+    def generate_meeting_minutes(self, conversation: str, repo_structure: str) -> str:
+        """Generate meeting minutes from conversation"""
+        if self.test_mode:
+            return self._get_test_response('meeting_minutes')
+        
+        try:
+            messages = [
+                {"role": "system", "content": "You are a meeting secretary. Generate professional meeting minutes from the conversation."},
+                {"role": "user", "content": f"Generate meeting minutes from this code review conversation:\n\nConversation:\n{conversation[:2000]}\n\nRepository Structure:\n{repo_structure[:500]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=1500,
+                temperature=0.3
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating meeting minutes: {e}")
+            return f"Error generating meeting minutes: {str(e)}"
+    
+    def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: dict) -> str:
+        """Generate insights report"""
+        if self.test_mode:
+            return self._get_test_response('insights')
+        
+        try:
+            messages = [
+                {"role": "system", "content": "You are a project analyst. Generate strategic insights and recommendations."},
+                {"role": "user", "content": f"Generate project insights from this code review:\n\nConversation:\n{conversation[:1500]}\n\nStructure:\n{repo_structure[:500]}\n\nFiles:\n{str(file_contents)[:1000]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.4
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating insights report: {e}")
+            return f"Error generating insights report: {str(e)}"
