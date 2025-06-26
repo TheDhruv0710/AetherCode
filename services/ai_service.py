@@ -2,41 +2,10 @@ import os
 import json
 import logging
 from typing import List, Dict, Any, Optional
-from langchain_openai import AzureChatOpenAI
-from langchain.prompts import PromptTemplate
+from openai import AzureOpenAI
+import openai
 
 logger = logging.getLogger(__name__)
-
-class GenAi:
-    def __init__(self, link_data):
-        model_name = os.getenv("model_name")
-        deployment_name = os.getenv("deployment_name")
-        print(link_data)
-
-        os.environ['OPENAI_API_TYPE'] = os.getenv("api_type")
-        os.environ['AZURE_OPENAI_ENDPOINT'] = os.getenv("api_base")
-        os.environ['OPENAI_API_KEY'] = os.getenv("api_key")
-        os.environ['OPENAI_API_VERSION'] = os.getenv("api_version")
-        self.model = AzureChatOpenAI(
-            deployment_name=deployment_name,
-            model_name=model_name
-        )
-        self.link_data = link_data
-        print(f"prompt_template: {os.getenv('prompt_template')}")
-        self.prompt_template = PromptTemplate(
-            input_variables=["link_data"],
-            template=os.getenv("prompt_template"),
-        )
-
-        self.chain = self.prompt_template | self.model
-
-    def generate_response(self, message):
-        prompt_input = {
-            "link_data": self.link_data,
-            "message": message
-        }
-        response = self.chain.invoke(prompt_input)
-        return response.content
 
 class AzureOpenAIService:
     def __init__(self):
@@ -45,32 +14,92 @@ class AzureOpenAIService:
         self.test_mode = False
         
         try:
+            # Log openai library version for debugging
+            logger.info(f"OpenAI library version: {openai.__version__}")
+            
             # Check if required environment variables are set
-            api_key = os.getenv('api_key')
-            endpoint = os.getenv('api_base')
-            deployment = os.getenv('deployment_name')
+            api_key = os.getenv('AZURE_OPENAI_API_KEY')
+            endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
+            deployment = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')
             
             # Debug logging to see what values are being read
-            logger.info(f"API Key configured: {bool(api_key and api_key not in ['your_api_key_here', 'your-api-key-here', ''])}")
-            logger.info(f"Endpoint configured: {bool(endpoint and endpoint not in ['https://your-resource.openai.azure.com/', 'https://your-resource-name.openai.azure.com/', ''])}")
-            logger.info(f"Deployment configured: {bool(deployment and deployment not in ['gpt-4', 'your-deployment-name', ''])}")
+            logger.info(f"Azure OpenAI API Key present: {'Yes' if api_key and len(api_key) > 10 else 'No'}")
+            logger.info(f"Azure OpenAI Endpoint: {endpoint}")
+            logger.info(f"Azure OpenAI Deployment: {deployment}")
             
-            if not all([api_key, endpoint, deployment]):
-                logger.warning("Missing required environment variables for Azure OpenAI")
-                logger.warning("Running in test mode with scripted responses")
+            # Check for placeholder values or missing values
+            if not api_key or api_key in ['your_api_key_here', 'your-api-key-here', '']:
+                logger.warning("Azure OpenAI API key not configured or is placeholder. Running in test mode.")
+                self.test_mode = True
+                return
+                
+            if not endpoint or endpoint in ['https://your-resource.openai.azure.com/', 'https://your-resource-name.openai.azure.com/', '']:
+                logger.warning("Azure OpenAI endpoint not configured or is placeholder. Running in test mode.")
+                self.test_mode = True
+                return
+                
+            if not deployment or deployment in ['gpt-4', 'your-deployment-name', '']:
+                logger.warning("Azure OpenAI deployment not configured or is placeholder. Running in test mode.")
                 self.test_mode = True
                 return
             
-            # Initialize GenAI with repository context
-            self.genai = GenAi(link_data="Flask Todo Application Repository")
-            logger.info("GenAI service initialized successfully")
-            self.test_mode = False
+            # Try to initialize the client
+            try:
+                self.client = AzureOpenAI(
+                    api_key=api_key,
+                    api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
+                    azure_endpoint=endpoint
+                )
+                self.deployment_name = deployment
+                logger.info("Azure OpenAI client initialized successfully")
+                
+            except TypeError as init_error:
+                logger.error(f"Azure OpenAI client initialization failed with TypeError: {init_error}")
+                logger.info("Trying alternative initialization method...")
+                
+                # Try alternative initialization for older versions
+                try:
+                    self.client = AzureOpenAI(
+                        api_key=api_key,
+                        api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
+                        base_url=f"{endpoint.rstrip('/')}/openai/deployments/{deployment}"
+                    )
+                    self.deployment_name = deployment
+                    logger.info("Azure OpenAI client initialized with alternative method")
+                    
+                except Exception as alt_error:
+                    logger.error(f"Alternative initialization also failed: {alt_error}")
+                    logger.warning("Falling back to test mode due to client initialization failure")
+                    self.test_mode = True
+                    return
+            
+            except Exception as init_error:
+                logger.error(f"Azure OpenAI client initialization failed: {init_error}")
+                logger.warning("Falling back to test mode due to client initialization failure")
+                self.test_mode = True
+                return
+            
+            # Test the connection with a simple call
+            try:
+                test_response = self.client.chat.completions.create(
+                    model=self.deployment_name,
+                    messages=[{"role": "user", "content": "Hello"}],
+                    max_tokens=10
+                )
+                logger.info("Azure OpenAI service initialized and tested successfully")
+                self.test_mode = False
+                
+            except Exception as test_error:
+                logger.error(f"Azure OpenAI connection test failed: {test_error}")
+                logger.warning("Falling back to test mode due to connection test failure")
+                self.test_mode = True
+                self.client = None
             
         except Exception as e:
-            logger.error(f"Failed to initialize GenAI service: {e}")
+            logger.error(f"Failed to initialize Azure OpenAI service: {e}")
             logger.warning("Running in test mode due to initialization error")
             self.test_mode = True
-    
+
     def _get_test_response(self, prompt_type: str, context: str = "", session_id: int = 0) -> str:
         """Generate scripted test responses that follow a demo flow"""
         if prompt_type == 'chat':
@@ -411,7 +440,11 @@ This Flask Todo application represents a well-executed implementation of modern 
             return self._get_test_response('chat', context, session_id)
             
         try:
-            return self.genai.generate_response(messages[-1]['content'])
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=max_tokens
+            ).choices[0].message.content
             
         except Exception as e:
             logger.error(f"Error in chat completion: {e}")
@@ -529,8 +562,12 @@ This Flask Todo application represents a well-executed implementation of modern 
                 }
         
         try:
-            return self.genai.generate_response(messages[-1]['content'])
-                
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=max_tokens
+            ).choices[0].message.content
+            
         except Exception as e:
             logger.error(f"Error in JSON completion: {e}")
             return {"error": "Failed to generate JSON response", "details": str(e)}
@@ -592,8 +629,12 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
             }
         
         try:
-            return self.genai.generate_response(message)
-                
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=[{"role": "user", "content": message}],
+                max_tokens=1000
+            ).choices[0].message.content
+            
         except Exception as e:
             logger.error(f"Error in chat: {e}")
             return {
@@ -764,8 +805,12 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Generate a technical specification for this repository:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
             ]
             
-            return self.genai.generate_response(messages[-1]['content'])
-                
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000
+            ).choices[0].message.content
+            
         except Exception as e:
             logger.error(f"Error generating tech spec: {e}")
             return f"Error generating technical specification: {str(e)}"
@@ -781,8 +826,12 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Analyze this repository and generate a code health report:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
             ]
             
-            return self.genai.generate_response(messages[-1]['content'])
-                
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000
+            ).choices[0].message.content
+            
         except Exception as e:
             logger.error(f"Error generating code health report: {e}")
             return f"Error generating code health report: {str(e)}"
@@ -798,8 +847,12 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Generate meeting minutes from this code review conversation:\n\nConversation:\n{conversation[:2000]}\n\nRepository Structure:\n{repo_structure[:500]}"}
             ]
             
-            return self.genai.generate_response(messages[-1]['content'])
-                
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000
+            ).choices[0].message.content
+            
         except Exception as e:
             logger.error(f"Error generating meeting minutes: {e}")
             return f"Error generating meeting minutes: {str(e)}"
@@ -815,8 +868,12 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Generate project insights from this code review:\n\nConversation:\n{conversation[:1500]}\n\nStructure:\n{repo_structure[:500]}\n\nFiles:\n{str(file_contents)[:1000]}"}
             ]
             
-            return self.genai.generate_response(messages[-1]['content'])
-                
+            return self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000
+            ).choices[0].message.content
+            
         except Exception as e:
             logger.error(f"Error generating insights report: {e}")
             return f"Error generating insights report: {str(e)}"
