@@ -1,6 +1,6 @@
 import json
 import logging
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from models import db, Session, Message
 from services.repo_service import RepositoryService
 
@@ -247,19 +247,169 @@ def regenerate_tech_spec(project_id):
         }), 500
 
 @ai_bp.route('/status', methods=['GET'])
-def get_ai_status():
-    """Get AI service status"""
+def ai_status():
+    """Get AI service status and configuration info"""
     try:
-        # Simple health check
+        from services.ai_service import AzureOpenAIService
+        import os
+        
+        ai_service = AzureOpenAIService()
+        
+        # Get environment variable status (without exposing sensitive data)
+        env_status = {
+            'api_key_configured': bool(os.getenv('AZURE_OPENAI_API_KEY') and 
+                                     os.getenv('AZURE_OPENAI_API_KEY') not in ['your_api_key_here', 'your-api-key-here', '']),
+            'endpoint_configured': bool(os.getenv('AZURE_OPENAI_ENDPOINT') and 
+                                      os.getenv('AZURE_OPENAI_ENDPOINT') not in ['https://your-resource.openai.azure.com/', 'https://your-resource-name.openai.azure.com/', '']),
+            'deployment_configured': bool(os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME') and 
+                                        os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME') not in ['gpt-4', 'your-deployment-name', '']),
+            'api_version': os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
+            'endpoint_preview': os.getenv('AZURE_OPENAI_ENDPOINT', 'Not set')[:50] + '...' if os.getenv('AZURE_OPENAI_ENDPOINT') else 'Not set',
+            'deployment_name': os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'Not set')
+        }
+        
         return jsonify({
-            'status': 'healthy',
-            'service': 'Azure OpenAI',
-            'timestamp': str(db.func.now())
+            'test_mode': ai_service.test_mode,
+            'client_initialized': ai_service.client is not None,
+            'environment_variables': env_status,
+            'status': 'AI service ready' if not ai_service.test_mode else 'Running in test mode'
         })
         
     except Exception as e:
         logger.error(f"Error checking AI status: {e}")
         return jsonify({
-            'status': 'error',
-            'error': str(e)
+            'error': 'Failed to check AI status',
+            'details': str(e)
+        }), 500
+
+@ai_bp.route('/reports/<int:session_id>/download/<report_type>', methods=['GET'])
+def download_report(session_id, report_type):
+    """Generate and download report files"""
+    try:
+        from services.ai_service import AzureOpenAIService
+        from services.repo_service import RepositoryService
+        from flask import send_file
+        import tempfile
+        import os
+        from datetime import datetime
+        
+        # Validate report type
+        valid_types = ['tech_spec', 'code_health', 'meeting_minutes', 'insights']
+        if report_type not in valid_types:
+            return jsonify({'error': 'Invalid report type'}), 400
+        
+        # Get session
+        session = Session.query.get(session_id)
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Initialize services
+        ai_service = AzureOpenAIService()
+        repo_service = RepositoryService()
+        
+        # Get repository info
+        repo_info = repo_service.get_repository_info(session.repo_path)
+        file_contents = repo_service.get_key_files_content(session.repo_path)
+        
+        # Generate report content based on type
+        if report_type == 'tech_spec':
+            content = ai_service.generate_tech_spec(repo_info.get('structure', ''), file_contents)
+            filename = f"Technical_Specification_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        elif report_type == 'code_health':
+            content = ai_service.generate_code_health_report(repo_info.get('structure', ''), file_contents)
+            filename = f"Code_Health_Report_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        elif report_type == 'meeting_minutes':
+            # Get conversation history
+            messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
+            conversation = "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
+            content = ai_service.generate_meeting_minutes(conversation, repo_info.get('structure', ''))
+            filename = f"Meeting_Minutes_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        elif report_type == 'insights':
+            # Get conversation history
+            messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
+            conversation = "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
+            content = ai_service.generate_insights_report(conversation, repo_info.get('structure', ''), file_contents)
+            filename = f"Project_Insights_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        
+        # Create temporary file
+        temp_dir = tempfile.gettempdir()
+        file_path = os.path.join(temp_dir, filename)
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        # Return file for download
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='text/markdown'
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating report download: {e}")
+        return jsonify({
+            'error': 'Failed to generate report file',
+            'details': str(e)
+        }), 500
+
+@ai_bp.route('/reports/<int:session_id>/export', methods=['GET'])
+def export_all_reports(session_id):
+    """Generate and download all reports as a ZIP file"""
+    try:
+        from services.ai_service import AzureOpenAIService
+        from services.repo_service import RepositoryService
+        from flask import send_file
+        import tempfile
+        import os
+        import zipfile
+        from datetime import datetime
+        
+        # Get session
+        session = Session.query.get(session_id)
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # Initialize services
+        ai_service = AzureOpenAIService()
+        repo_service = RepositoryService()
+        
+        # Get repository info
+        repo_info = repo_service.get_repository_info(session.repo_path)
+        file_contents = repo_service.get_key_files_content(session.repo_path)
+        
+        # Get conversation history
+        messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
+        conversation = "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
+        
+        # Generate all reports
+        reports = {
+            'Technical_Specification.md': ai_service.generate_tech_spec(repo_info.get('structure', ''), file_contents),
+            'Code_Health_Report.md': ai_service.generate_code_health_report(repo_info.get('structure', ''), file_contents),
+            'Meeting_Minutes.md': ai_service.generate_meeting_minutes(conversation, repo_info.get('structure', '')),
+            'Project_Insights.md': ai_service.generate_insights_report(conversation, repo_info.get('structure', ''), file_contents)
+        }
+        
+        # Create temporary directory and ZIP file
+        temp_dir = tempfile.mkdtemp()
+        zip_filename = f"AetherCode_Reports_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+        zip_path = os.path.join(temp_dir, zip_filename)
+        
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for filename, content in reports.items():
+                zipf.writestr(filename, content)
+        
+        # Return ZIP file for download
+        return send_file(
+            zip_path,
+            as_attachment=True,
+            download_name=zip_filename,
+            mimetype='application/zip'
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating reports export: {e}")
+        return jsonify({
+            'error': 'Failed to generate reports export',
+            'details': str(e)
         }), 500

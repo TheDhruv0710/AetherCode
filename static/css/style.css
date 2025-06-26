@@ -610,3 +610,124 @@ button:focus, input:focus {
     background-color: rgba(139, 92, 246, 0.1);
     cursor: pointer;
 }
+
+/* Reports Modal Download Styling */
+.reports-download-section {
+    padding: 20px;
+}
+
+.reports-download-section h3 {
+    color: #8B5CF6;
+    margin-bottom: 10px;
+    font-size: 1.4em;
+}
+
+.reports-download-section p {
+    color: #b0b0b0;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.download-options {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.individual-reports h4,
+.bulk-download h4 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    border-bottom: 2px solid #8B5CF6;
+    padding-bottom: 5px;
+}
+
+.download-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.download-btn {
+    background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+    border: 2px solid #8B5CF6;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #8B5CF6, #A855F7);
+    border-color: #A855F7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.download-btn.primary {
+    background: linear-gradient(135deg, #8B5CF6, #A855F7);
+    border-color: #A855F7;
+    font-size: 16px;
+    padding: 15px 25px;
+    font-weight: 600;
+}
+
+.download-btn.primary:hover {
+    background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+    border-color: #7C3AED;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.bulk-download {
+    text-align: center;
+}
+
+.bulk-download .download-btn {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.download-info {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 25px;
+}
+
+.download-info p {
+    margin: 0;
+    color: #d0d0d0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.download-info strong {
+    color: #8B5CF6;
+}
+
+/* Responsive design for download buttons */
+@media (max-width: 768px) {
+    .download-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .download-options {
+        gap: 20px;
+    }
+    
+    .download-btn {
+        padding: 15px 20px;
+        font-size: 15px;
+    }
+}

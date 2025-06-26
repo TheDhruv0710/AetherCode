@@ -14,7 +14,7 @@ def test_github_repo_download():
     repo_service = RepositoryService()
     
     # Test with a small public repository
-    test_repo_url = "https://github.com/octocat/Hello-World"
+    test_repo_url = "https://github.com/TheDhruv0710/AetherCode/tree/v6"
     project_id = "test-project-123"
     
     print(f"Testing repository download: {test_repo_url}")

@@ -187,32 +187,102 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        setLoading(exportBtn, 'Generating...', true);
+        setLoading(exportBtn, 'Preparing Downloads...', true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/ai/reports/${currentProjectId}`);
-            
-            if (!response.ok) {
-                const errorMessage = await handleApiError(response);
-                throw new Error(errorMessage);
-            }
-
-            const data = await response.json();
+            // Show the reports modal with download options
             reportsContent.innerHTML = `
-                <h3>Code Health Report</h3>
-                <pre>${data.code_health_report || 'No report available.'}</pre>
-                <h3>Meeting Minutes</h3>
-                <pre>${data.mom_content || 'No minutes available.'}</pre>
-                <h3>Insights</h3>
-                <pre>${data.insights_content || 'No insights available.'}</pre>
+                <div class="reports-download-section">
+                    <h3>📊 Available Reports</h3>
+                    <p>Download individual reports or get all reports in a single ZIP file:</p>
+                    
+                    <div class="download-options">
+                        <div class="individual-reports">
+                            <h4>Individual Reports</h4>
+                            <div class="download-buttons">
+                                <button class="download-btn" onclick="window.downloadReport('tech_spec')">
+                                    📋 Technical Specification
+                                </button>
+                                <button class="download-btn" onclick="window.downloadReport('code_health')">
+                                    🏥 Code Health Report
+                                </button>
+                                <button class="download-btn" onclick="window.downloadReport('meeting_minutes')">
+                                    📝 Meeting Minutes
+                                </button>
+                                <button class="download-btn" onclick="window.downloadReport('insights')">
+                                    💡 Project Insights
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bulk-download">
+                            <h4>Complete Package</h4>
+                            <button class="download-btn primary" onclick="window.downloadAllReports()">
+                                📦 Download All Reports (ZIP)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="download-info">
+                        <p><strong>Note:</strong> Reports are generated specifically for the Python Calculator project and include calculator-focused analysis and recommendations.</p>
+                    </div>
+                </div>
             `;
             reportsModal.style.display = 'block';
 
         } catch (error) {
-            console.error('Error fetching reports:', error);
-            alert(`Error fetching reports: ${error.message}`);
+            console.error('Error preparing reports:', error);
+            alert(`Error preparing reports: ${error.message}`);
         } finally {
             setLoading(exportBtn, 'Export Reports', false);
+        }
+    }
+
+    // Download individual report
+    window.downloadReport = async function(reportType) {
+        if (!currentProjectId) {
+            alert('No project selected.');
+            return;
+        }
+
+        try {
+            const downloadUrl = `${API_BASE_URL}/ai/reports/${currentProjectId}/download/${reportType}`;
+            
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = ''; // Let the server determine the filename
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+        } catch (error) {
+            console.error('Error downloading report:', error);
+            alert(`Error downloading report: ${error.message}`);
+        }
+    }
+
+    // Download all reports as ZIP
+    window.downloadAllReports = async function() {
+        if (!currentProjectId) {
+            alert('No project selected.');
+            return;
+        }
+
+        try {
+            const downloadUrl = `${API_BASE_URL}/ai/reports/${currentProjectId}/export`;
+            
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = ''; // Let the server determine the filename
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+        } catch (error) {
+            console.error('Error downloading reports package:', error);
+            alert(`Error downloading reports package: ${error.message}`);
         }
     }
 
