@@ -101,74 +101,96 @@ class AzureOpenAIService:
             self.test_mode = True
     
     def _get_test_response(self, prompt_type: str, context: str = "") -> str:
-        """Generate contextual test responses based on prompt type and context"""
-        
+        """Generate scripted test responses that follow a demo flow"""
         if prompt_type == 'chat':
+            # Get or initialize conversation state for this context
+            if not hasattr(self, '_conversation_state'):
+                self._conversation_state = {}
+            
+            # Use a simple hash of context to track conversation state
+            context_key = hash(context.lower().strip()) % 1000
+            
+            if context_key not in self._conversation_state:
+                self._conversation_state[context_key] = {'step': 0, 'used_responses': set()}
+            
+            state = self._conversation_state[context_key]
             context_lower = context.lower()
             
-            # Comprehensive conversation dictionary for Flask Todo App
-            conversation_responses = {
-                'hello': "Hello! I'm excited to review this Flask Todo application with you. I can see it's a well-structured web application with user authentication, CRUD operations, and a clean MVC architecture. What aspect would you like to explore first?",
-                
-                'hi': "Hi there! This Flask Todo app looks like a solid web application. I notice it has user management, task operations, and follows Flask best practices. Where shall we start our code review?",
-                
-                'analyze': "I've analyzed the Flask Todo application structure. It follows a clean MVC pattern with separate models for Users and Tasks, implements Flask-Login for authentication, uses SQLAlchemy for database operations, and has proper form handling with WTForms. The application demonstrates excellent separation of concerns and follows Flask conventions beautifully.",
-                
-                'structure': "The application structure is well-organized! It follows the standard Flask application factory pattern with blueprints for different functionalities. The models are properly defined with relationships, views handle routing logic cleanly, and templates use Jinja2 effectively. The static files are organized, and the configuration management is solid.",
-                
-                'architecture': "This Flask app demonstrates excellent architectural decisions! It uses the Blueprint pattern for modularity, implements proper database relationships between Users and Tasks, follows the MVC pattern consistently, and separates concerns effectively. The authentication system is well-integrated, and the application follows Flask best practices throughout.",
-                
-                'database': "The database design is thoughtful! It uses SQLAlchemy ORM with proper model relationships - Users have a one-to-many relationship with Tasks. The models include appropriate constraints, foreign keys are properly defined, and the database initialization is handled cleanly. The migration strategy appears solid for development and production.",
-                
-                'security': "Security implementation looks robust! The app uses Flask-Login for session management, implements proper password hashing (likely with Werkzeug), includes CSRF protection through Flask-WTF, validates user input through forms, and follows secure authentication patterns. The user session handling appears secure and follows best practices.",
-                
-                'authentication': "The authentication system is well-implemented! It uses Flask-Login for user session management, includes proper login/logout functionality, handles user registration securely, implements password hashing, and includes user session persistence. The login required decorators are properly used to protect routes.",
-                
-                'api': "The API design follows RESTful principles well! Routes are logically organized, HTTP methods are used appropriately (GET for viewing, POST for creating, PUT/PATCH for updating, DELETE for removing), error handling appears consistent, and the response formats are clean. The routing structure makes the API intuitive to use.",
-                
-                'frontend': "The frontend implementation is clean! It uses Jinja2 templating effectively, includes proper form handling with Flask-WTF, implements responsive design principles, handles user feedback through flash messages, and maintains good separation between presentation and logic. The UI appears user-friendly and functional.",
-                
-                'forms': "Form handling is excellently implemented! The app uses Flask-WTF for form creation and validation, includes proper CSRF protection, implements client and server-side validation, handles form errors gracefully, and provides good user feedback. The form classes are well-structured and reusable.",
-                
-                'models': "The data models are well-designed! User and Task models have appropriate fields, relationships are properly defined with foreign keys, the models include necessary constraints and validations, database operations are handled cleanly, and the ORM usage follows SQLAlchemy best practices.",
-                
-                'routes': "The routing structure is logical and clean! Routes are organized by functionality, use appropriate HTTP methods, include proper error handling, implement authentication checks where needed, and follow RESTful conventions. The URL patterns are intuitive and user-friendly.",
-                
-                'templates': "The template system is well-organized! It uses Jinja2 template inheritance effectively, includes proper base templates, implements responsive design, handles dynamic content cleanly, and maintains good separation of concerns. The template structure promotes reusability and maintainability.",
-                
-                'error': "Error handling in this Flask app is comprehensive! It includes proper exception handling, implements custom error pages, provides meaningful error messages to users, logs errors appropriately, and handles database errors gracefully. The error handling doesn't expose sensitive information and maintains good user experience.",
-                
-                'testing': "For testing this Flask application, I'd recommend implementing unit tests for models, integration tests for routes, testing authentication flows, validating form submissions, testing database operations, and implementing end-to-end tests. Flask-Testing would be excellent for this, along with pytest for comprehensive test coverage.",
-                
-                'deployment': "For deployment, this Flask app is well-prepared! Consider using Gunicorn as WSGI server, implement proper environment configuration, set up database migrations, configure static file serving, implement logging, and consider containerization with Docker. The app structure supports various deployment strategies.",
-                
-                'performance': "Performance considerations for this app include implementing database query optimization, adding caching for frequently accessed data, optimizing template rendering, implementing pagination for large task lists, considering database indexing, and monitoring application metrics. The current structure supports these optimizations well.",
-                
-                'improvements': "Several enhancement opportunities exist! Consider adding task categories/tags, implementing task priorities and due dates, adding collaborative features, implementing search functionality, adding email notifications, creating a REST API, implementing task sharing, and adding data export features.",
-                
-                'scalability': "The application architecture supports scaling well! The Blueprint pattern allows for easy feature additions, the database design can handle growth, the authentication system is robust, and the separation of concerns makes maintenance easier. Consider implementing caching, database optimization, and load balancing for larger scale.",
-                
-                'best practices': "This Flask app follows many best practices! It uses proper project structure, implements security measures, follows PEP 8 coding standards, uses environment variables for configuration, implements proper error handling, and maintains clean code organization. It's an excellent example of Flask development.",
-                
-                'flask': "This is a great example of Flask development! It demonstrates proper use of Flask extensions, follows the application factory pattern, implements blueprints effectively, uses Flask-Login and Flask-WTF appropriately, and showcases Flask's flexibility and power for web development."
-            }
-            
-            # Find the best matching response
-            for keyword, response in conversation_responses.items():
-                if keyword in context_lower:
-                    return response
-            
-            # Default responses for unmatched inputs
-            default_responses = [
-                "That's an excellent question about this Flask Todo application! The codebase demonstrates solid web development practices and clean architecture. What specific aspect would you like to explore - the database design, authentication system, or perhaps the frontend implementation?",
-                "Great observation about the Flask app! This project showcases excellent use of Flask ecosystem tools and follows web development best practices. Would you like to dive deeper into the routing structure, security implementation, or user interface design?",
-                "Interesting perspective on this Todo application! The code demonstrates professional Flask development with proper MVC architecture and security considerations. Which component interests you most - the data models, API design, or template system?",
-                "Excellent point about this Flask project! It's a comprehensive example of modern web application development with authentication, CRUD operations, and clean code organization. What would you like to discuss in more detail?"
+            # Scripted conversation flow for Flask Todo App demo
+            demo_script = [
+                # Step 1: Initial greeting
+                {
+                    'triggers': ['hello', 'hi', 'analyze', 'start'],
+                    'response': "Hello! I'm excited to review this Flask Todo application with you. I can see it's a well-structured web application with user authentication, CRUD operations, and a clean MVC architecture. The codebase follows Flask best practices with proper Blueprint organization and SQLAlchemy integration. What aspect would you like to explore first?"
+                },
+                # Step 2: Architecture overview
+                {
+                    'triggers': ['structure', 'architecture', 'overall', 'organization'],
+                    'response': "Excellent question! This Flask application follows a sophisticated architecture pattern. It uses the application factory pattern with Blueprints for modularity - you'll see separate blueprints for authentication, main routes, and API endpoints. The MVC pattern is cleanly implemented with SQLAlchemy models handling data, view functions managing logic, and Jinja2 templates for presentation. The project structure separates concerns beautifully with dedicated folders for templates, static files, and configuration."
+                },
+                # Step 3: Database design
+                {
+                    'triggers': ['database', 'models', 'data', 'sqlalchemy'],
+                    'response': "The database design is really thoughtful! It uses SQLAlchemy ORM with a clean relational structure. The User model handles authentication with proper password hashing, while the Task model manages todo items with fields like title, description, completion status, and timestamps. There's a proper one-to-many relationship between Users and Tasks using foreign keys. The models include validation constraints and the database initialization uses Flask-Migrate for version control."
+                },
+                # Step 4: Security implementation
+                {
+                    'triggers': ['security', 'authentication', 'login', 'protection'],
+                    'response': "Security is well-implemented here! The application uses Flask-Login for session management with secure user authentication. Passwords are properly hashed using Werkzeug's security utilities - never stored in plain text. CSRF protection is enabled through Flask-WTF forms, and there's proper input validation on all user inputs. The login_required decorators protect sensitive routes, and session handling follows security best practices with secure cookies."
+                },
+                # Step 5: API and routing
+                {
+                    'triggers': ['api', 'routes', 'endpoints', 'restful'],
+                    'response': "The API design follows RESTful principles excellently! Routes are logically organized with proper HTTP methods - GET for retrieving tasks, POST for creating new ones, PUT for updates, and DELETE for removal. The URL patterns are intuitive like '/tasks', '/tasks/<id>', '/login', '/register'. Error handling is consistent across endpoints with appropriate HTTP status codes. The Blueprint structure makes the routing clean and maintainable."
+                },
+                # Step 6: Frontend and templates
+                {
+                    'triggers': ['frontend', 'templates', 'ui', 'interface', 'jinja'],
+                    'response': "The frontend implementation is clean and user-friendly! It leverages Jinja2 templating with proper template inheritance - there's a base template that other templates extend. Forms are handled elegantly with Flask-WTF, providing both client and server-side validation. The UI includes responsive design elements, flash messaging for user feedback, and clean CSS styling. The separation between presentation logic and business logic is well-maintained."
+                },
+                # Step 7: Testing strategy
+                {
+                    'triggers': ['test', 'testing', 'pytest', 'coverage'],
+                    'response': "For testing this Flask application, I'd recommend a comprehensive approach! Unit tests should cover the models - testing User creation, Task CRUD operations, and relationship integrity. Integration tests should verify route functionality, authentication flows, and form submissions. Flask-Testing provides excellent tools for this, and pytest would be perfect for the test framework. You'd want to test both successful operations and error conditions, plus edge cases like invalid inputs."
+                },
+                # Step 8: Performance and scalability
+                {
+                    'triggers': ['performance', 'scalability', 'optimization', 'scale'],
+                    'response': "Performance considerations are important for this app! The current architecture supports scaling well with its Blueprint pattern allowing easy feature additions. For optimization, consider implementing database query optimization with proper indexing, adding caching for frequently accessed data, and pagination for large task lists. The SQLAlchemy ORM handles connection pooling efficiently. For larger scale, you could implement Redis for session storage and consider load balancing strategies."
+                },
+                # Step 9: Improvements and enhancements
+                {
+                    'triggers': ['improve', 'enhance', 'features', 'suggestions'],
+                    'response': "There are exciting enhancement opportunities! Consider adding task categories or tags for better organization, implementing task priorities and due dates for enhanced productivity features. Collaborative features like task sharing between users would be valuable. Search functionality across tasks, email notifications for deadlines, and a REST API for mobile app integration are all natural extensions. The clean architecture makes these additions straightforward to implement."
+                },
+                # Step 10: Best practices and deployment
+                {
+                    'triggers': ['deploy', 'production', 'best', 'practices'],
+                    'response': "This Flask app demonstrates excellent development practices! It follows PEP 8 coding standards, uses environment variables for configuration, implements proper error handling, and maintains clean code organization. For deployment, consider using Gunicorn as the WSGI server, implement proper logging, set up database migrations, and use Docker for containerization. The application structure supports various deployment strategies from simple VPS hosting to cloud platforms like AWS or Heroku."
+                }
             ]
             
-            import random
-            return random.choice(default_responses)
+            # Find matching response based on current step and triggers
+            for i, script_item in enumerate(demo_script):
+                if any(trigger in context_lower for trigger in script_item['triggers']):
+                    response_key = f"step_{i}"
+                    if response_key not in state['used_responses']:
+                        state['used_responses'].add(response_key)
+                        state['step'] = i + 1
+                        return script_item['response']
             
+            # If no specific trigger found, provide contextual guidance
+            if state['step'] == 0:
+                return "Hello! I'm ready to analyze this Flask Todo application. To get started, try asking me to 'analyze' the application or tell me about its 'structure' and 'architecture'."
+            elif state['step'] < 3:
+                return "Great! We've covered the basics. Would you like to explore the 'database' design and models, or learn about the 'security' implementation?"
+            elif state['step'] < 6:
+                return "Excellent progress! Let's dive deeper - ask me about the 'API' design and routing, or the 'frontend' templates and user interface."
+            elif state['step'] < 8:
+                return "We're making good progress! Consider asking about 'testing' strategies or 'performance' and scalability considerations."
+            else:
+                return "We've covered a lot of ground! Ask about potential 'improvements' and enhancements, or 'deployment' and best practices to wrap up our review."
+        
         elif prompt_type == 'tech_spec':
             return f"""# Flask Todo App - Technical Specification
 
@@ -606,7 +628,7 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
         except Exception as e:
             logger.error(f"Error generating code health report: {e}")
             return f"Error generating code health report: {str(e)}"
-    
+
     def generate_meeting_minutes(self, conversation: str, repo_structure: str) -> str:
         """Generate meeting minutes from conversation"""
         if self.test_mode:
@@ -630,7 +652,7 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
         except Exception as e:
             logger.error(f"Error generating meeting minutes: {e}")
             return f"Error generating meeting minutes: {str(e)}"
-    
+
     def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: Dict[str, str]) -> str:
         """Generate insights report"""
         if self.test_mode:
