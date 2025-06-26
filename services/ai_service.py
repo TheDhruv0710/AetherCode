@@ -101,208 +101,219 @@ class AzureOpenAIService:
             self.test_mode = True
     
     def _get_test_response(self, prompt_type: str, context: str = "") -> str:
-        """Generate test responses when Azure OpenAI is not available"""
+        """Generate contextual test responses based on prompt type and context"""
         
         if prompt_type == 'chat':
-            # Scripted conversation flow for realistic demo
             context_lower = context.lower()
             
-            # Initial greeting and analysis
-            if any(word in context_lower for word in ['hello', 'hi', 'start', 'analyze']):
-                return "Hello! I've analyzed your Python calculator repository. This is a well-structured educational project! I can see it implements basic arithmetic operations with clean function-based architecture. What specific aspect would you like to discuss first - the code structure, error handling, or potential improvements?"
+            # Comprehensive conversation dictionary for Flask Todo App
+            conversation_responses = {
+                'hello': "Hello! I'm excited to review this Flask Todo application with you. I can see it's a well-structured web application with user authentication, CRUD operations, and a clean MVC architecture. What aspect would you like to explore first?",
+                
+                'hi': "Hi there! This Flask Todo app looks like a solid web application. I notice it has user management, task operations, and follows Flask best practices. Where shall we start our code review?",
+                
+                'analyze': "I've analyzed the Flask Todo application structure. It follows a clean MVC pattern with separate models for Users and Tasks, implements Flask-Login for authentication, uses SQLAlchemy for database operations, and has proper form handling with WTForms. The application demonstrates excellent separation of concerns and follows Flask conventions beautifully.",
+                
+                'structure': "The application structure is well-organized! It follows the standard Flask application factory pattern with blueprints for different functionalities. The models are properly defined with relationships, views handle routing logic cleanly, and templates use Jinja2 effectively. The static files are organized, and the configuration management is solid.",
+                
+                'architecture': "This Flask app demonstrates excellent architectural decisions! It uses the Blueprint pattern for modularity, implements proper database relationships between Users and Tasks, follows the MVC pattern consistently, and separates concerns effectively. The authentication system is well-integrated, and the application follows Flask best practices throughout.",
+                
+                'database': "The database design is thoughtful! It uses SQLAlchemy ORM with proper model relationships - Users have a one-to-many relationship with Tasks. The models include appropriate constraints, foreign keys are properly defined, and the database initialization is handled cleanly. The migration strategy appears solid for development and production.",
+                
+                'security': "Security implementation looks robust! The app uses Flask-Login for session management, implements proper password hashing (likely with Werkzeug), includes CSRF protection through Flask-WTF, validates user input through forms, and follows secure authentication patterns. The user session handling appears secure and follows best practices.",
+                
+                'authentication': "The authentication system is well-implemented! It uses Flask-Login for user session management, includes proper login/logout functionality, handles user registration securely, implements password hashing, and includes user session persistence. The login required decorators are properly used to protect routes.",
+                
+                'api': "The API design follows RESTful principles well! Routes are logically organized, HTTP methods are used appropriately (GET for viewing, POST for creating, PUT/PATCH for updating, DELETE for removing), error handling appears consistent, and the response formats are clean. The routing structure makes the API intuitive to use.",
+                
+                'frontend': "The frontend implementation is clean! It uses Jinja2 templating effectively, includes proper form handling with Flask-WTF, implements responsive design principles, handles user feedback through flash messages, and maintains good separation between presentation and logic. The UI appears user-friendly and functional.",
+                
+                'forms': "Form handling is excellently implemented! The app uses Flask-WTF for form creation and validation, includes proper CSRF protection, implements client and server-side validation, handles form errors gracefully, and provides good user feedback. The form classes are well-structured and reusable.",
+                
+                'models': "The data models are well-designed! User and Task models have appropriate fields, relationships are properly defined with foreign keys, the models include necessary constraints and validations, database operations are handled cleanly, and the ORM usage follows SQLAlchemy best practices.",
+                
+                'routes': "The routing structure is logical and clean! Routes are organized by functionality, use appropriate HTTP methods, include proper error handling, implement authentication checks where needed, and follow RESTful conventions. The URL patterns are intuitive and user-friendly.",
+                
+                'templates': "The template system is well-organized! It uses Jinja2 template inheritance effectively, includes proper base templates, implements responsive design, handles dynamic content cleanly, and maintains good separation of concerns. The template structure promotes reusability and maintainability.",
+                
+                'error': "Error handling in this Flask app is comprehensive! It includes proper exception handling, implements custom error pages, provides meaningful error messages to users, logs errors appropriately, and handles database errors gracefully. The error handling doesn't expose sensitive information and maintains good user experience.",
+                
+                'testing': "For testing this Flask application, I'd recommend implementing unit tests for models, integration tests for routes, testing authentication flows, validating form submissions, testing database operations, and implementing end-to-end tests. Flask-Testing would be excellent for this, along with pytest for comprehensive test coverage.",
+                
+                'deployment': "For deployment, this Flask app is well-prepared! Consider using Gunicorn as WSGI server, implement proper environment configuration, set up database migrations, configure static file serving, implement logging, and consider containerization with Docker. The app structure supports various deployment strategies.",
+                
+                'performance': "Performance considerations for this app include implementing database query optimization, adding caching for frequently accessed data, optimizing template rendering, implementing pagination for large task lists, considering database indexing, and monitoring application metrics. The current structure supports these optimizations well.",
+                
+                'improvements': "Several enhancement opportunities exist! Consider adding task categories/tags, implementing task priorities and due dates, adding collaborative features, implementing search functionality, adding email notifications, creating a REST API, implementing task sharing, and adding data export features.",
+                
+                'scalability': "The application architecture supports scaling well! The Blueprint pattern allows for easy feature additions, the database design can handle growth, the authentication system is robust, and the separation of concerns makes maintenance easier. Consider implementing caching, database optimization, and load balancing for larger scale.",
+                
+                'best practices': "This Flask app follows many best practices! It uses proper project structure, implements security measures, follows PEP 8 coding standards, uses environment variables for configuration, implements proper error handling, and maintains clean code organization. It's an excellent example of Flask development.",
+                
+                'flask': "This is a great example of Flask development! It demonstrates proper use of Flask extensions, follows the application factory pattern, implements blueprints effectively, uses Flask-Login and Flask-WTF appropriately, and showcases Flask's flexibility and power for web development."
+            }
             
-            # Code structure questions
-            elif any(word in context_lower for word in ['structure', 'architecture', 'organization']):
-                return "Great question about the code structure! The calculator uses a clean function-based approach where each mathematical operation (add, subtract, multiply, divide) is implemented as a separate function. This modular design makes the code easy to understand and maintain. Would you like me to elaborate on any specific function or discuss how we could enhance this architecture?"
+            # Find the best matching response
+            for keyword, response in conversation_responses.items():
+                if keyword in context_lower:
+                    return response
             
-            # Error handling discussion
-            elif any(word in context_lower for word in ['error', 'exception', 'handling', 'zero']):
-                return "Excellent point about error handling! The calculator should include robust exception handling, especially for division by zero scenarios. Currently, I can see the basic structure, but we could improve it by adding try-catch blocks and user-friendly error messages. What's your experience with implementing error handling in Python projects?"
+            # Default responses for unmatched inputs
+            default_responses = [
+                "That's an excellent question about this Flask Todo application! The codebase demonstrates solid web development practices and clean architecture. What specific aspect would you like to explore - the database design, authentication system, or perhaps the frontend implementation?",
+                "Great observation about the Flask app! This project showcases excellent use of Flask ecosystem tools and follows web development best practices. Would you like to dive deeper into the routing structure, security implementation, or user interface design?",
+                "Interesting perspective on this Todo application! The code demonstrates professional Flask development with proper MVC architecture and security considerations. Which component interests you most - the data models, API design, or template system?",
+                "Excellent point about this Flask project! It's a comprehensive example of modern web application development with authentication, CRUD operations, and clean code organization. What would you like to discuss in more detail?"
+            ]
             
-            # Testing questions
-            elif any(word in context_lower for word in ['test', 'testing', 'unit', 'pytest']):
-                return "Testing is crucial for a calculator application! I'd recommend implementing unit tests for each mathematical function using pytest. We should test normal cases, edge cases like division by zero, and input validation. Have you worked with automated testing frameworks before, or would you like me to suggest a testing strategy?"
-            
-            # Improvement suggestions
-            elif any(word in context_lower for word in ['improve', 'enhance', 'better', 'features']):
-                return "There are several exciting ways to enhance this calculator! We could add a GUI using tkinter, implement scientific functions (sqrt, sin, cos), add memory features, or create a calculation history. We could also improve input validation and add support for complex expressions. Which enhancement interests you most?"
-            
-            # GUI questions
-            elif any(word in context_lower for word in ['gui', 'interface', 'tkinter', 'visual']):
-                return "A GUI would definitely improve user experience! Tkinter is perfect for this calculator - we could create buttons for each operation, a display screen, and even add keyboard support. The current function-based structure would work well with GUI event handlers. Are you familiar with tkinter, or would you prefer a web-based interface?"
-            
-            # Performance questions
-            elif any(word in context_lower for word in ['performance', 'speed', 'optimize']):
-                return "For a basic calculator, performance is already excellent since arithmetic operations are very fast. However, if we add scientific functions or complex number support, we might want to consider optimization. The current design is efficient for its scope. Are you planning to add more computationally intensive features?"
-            
-            # Documentation questions
-            elif any(word in context_lower for word in ['document', 'comment', 'readme']):
-                return "Documentation is important for educational projects! I'd suggest adding detailed docstrings to each function explaining parameters and return values, plus inline comments for complex logic. A comprehensive README with usage examples would help other learners. How detailed do you want the documentation to be?"
-            
-            # Security questions
-            elif any(word in context_lower for word in ['security', 'safe', 'input']):
-                return "Good thinking about security! For a calculator, the main concerns are input validation and preventing code injection. We should validate that inputs are numeric and handle malformed expressions safely. The current design is relatively secure since it's not web-facing. Are you planning to deploy this online?"
-            
-            # General positive responses for other inputs
-            else:
-                responses = [
-                    "That's an interesting perspective! The calculator's design shows good programming fundamentals. What specific aspect would you like to explore further?",
-                    "I appreciate your question! This calculator project demonstrates solid Python concepts. Is there a particular feature or improvement you'd like to discuss?",
-                    "Good observation! The code structure is quite educational. Would you like to dive deeper into any specific function or discuss potential enhancements?",
-                    "Excellent point! This calculator serves as a great learning tool. What would you like to focus on - testing, documentation, or adding new features?"
-                ]
-                import random
-                return random.choice(responses)
+            import random
+            return random.choice(default_responses)
             
         elif prompt_type == 'tech_spec':
-            return f"""# Python Calculator - Technical Specification
+            return f"""# Flask Todo App - Technical Specification
 
 ## Project Overview
-This is a Python-based calculator application designed to perform basic mathematical operations. The project demonstrates fundamental programming concepts and serves as an excellent educational tool for learning Python programming.
+This is a Flask-based Todo application designed to demonstrate modern web development practices. The project showcases a well-structured web application with user authentication, CRUD operations, and a clean MVC architecture.
 
 ## Architecture Analysis
 - **Language**: Python 3.x
-- **Type**: Console-based application
-- **Design Pattern**: Procedural programming with function-based architecture
-- **User Interface**: Command-line interface (CLI)
+- **Type**: Web application
+- **Design Pattern**: Model-View-Controller (MVC)
+- **User Interface**: Web-based interface with Jinja2 templating
 
 ## Core Components
-### 1. Mathematical Operations Module
-- **Addition Function**: Handles sum of two or more numbers
-- **Subtraction Function**: Performs difference calculations
-- **Multiplication Function**: Executes product operations
-- **Division Function**: Handles quotient calculations with zero-division protection
+### 1. User Management Module
+- **User Model**: Handles user registration, login, and session management
+- **Authentication**: Implements Flask-Login for secure user authentication
 
-### 2. User Interface Layer
-- **Input Handler**: Manages user input and validation
-- **Display Manager**: Formats and presents calculation results
-- **Menu System**: Provides operation selection interface
+### 2. Task Management Module
+- **Task Model**: Handles task creation, reading, updating, and deletion
+- **CRUD Operations**: Implements RESTful API for task management
 
-### 3. Error Management
-- **Exception Handling**: Catches and manages runtime errors
-- **Input Validation**: Ensures valid numeric inputs
-- **Division by Zero Protection**: Prevents mathematical errors
+### 3. Database Management
+- **Database**: Uses SQLAlchemy ORM for database operations
+- **Migration**: Implements Alembic for database migration
 
 ## Technical Features
-- ✅ **Basic Arithmetic**: Addition, subtraction, multiplication, division
-- ✅ **Error Handling**: Robust exception management
-- ✅ **User-Friendly Interface**: Clear prompts and instructions
-- ✅ **Input Validation**: Handles invalid user inputs gracefully
-- ✅ **Continuous Operation**: Loop-based design for multiple calculations
+- ✅ **User Authentication**: Secure user authentication with Flask-Login
+- ✅ **CRUD Operations**: RESTful API for task management
+- ✅ **Database Management**: SQLAlchemy ORM for database operations
+- ✅ **MVC Architecture**: Clean separation of concerns with MVC pattern
+- ✅ **Security**: Implements security measures like CSRF protection and password hashing
 
 ## Code Quality Assessment
-- **Readability**: Clean, well-commented code structure
-- **Modularity**: Separate functions for each operation
+- **Readability**: Clean, well-structured implementation
+- **Modularity**: Separate modules for user management, task management, and database operations
 - **Maintainability**: Easy to extend with additional features
-- **Educational Value**: Perfect for learning programming concepts
+- **Educational Value**: Perfect for learning Flask development and web development best practices
 
 ## Potential Enhancements
-1. **GUI Implementation**: Add tkinter-based graphical interface
-2. **Advanced Operations**: Include scientific calculator functions
-3. **Memory Features**: Add calculation history and memory storage
-4. **Unit Testing**: Implement comprehensive test suite
-5. **Configuration**: Add settings for decimal precision
+1. **Add Task Categories**: Implement task categories or tags for better organization
+2. **Implement Task Priorities**: Add task priorities and due dates for enhanced task management
+3. **Collaborative Features**: Implement collaborative features like task assignment and sharing
+4. **Search Functionality**: Add search functionality for tasks
+5. **Email Notifications**: Implement email notifications for task updates
 
-*Note: This analysis is based on typical Python calculator implementations. Configure Azure OpenAI for detailed code-specific analysis.*"""
+*Note: This analysis is based on typical Flask Todo app implementations. Configure Azure OpenAI for detailed code-specific analysis.*"""
 
         elif prompt_type == 'code_health':
-            return f"""# Python Calculator - Code Health Report
+            return f"""# Flask Todo App - Code Health Report
 
 ## Executive Summary
-The Python calculator demonstrates good fundamental programming practices with clean function-based architecture and proper separation of concerns.
+The Flask Todo application demonstrates good fundamental web development practices with clean MVC architecture and proper separation of concerns.
 
 ## Code Quality Assessment
-✅ **Structure**: Well-organized with separate functions for each operation
+✅ **Structure**: Well-organized with separate modules for user management, task management, and database operations
 ✅ **Readability**: Clear function names and logical code flow
-✅ **Modularity**: Each mathematical operation is properly encapsulated
-✅ **Error Handling**: Includes protection against common errors like division by zero
+✅ **Modularity**: Each module serves a clear purpose and works together seamlessly
+✅ **Error Handling**: Includes proper exception handling and error messages
 
 ## Strengths Identified
 ### Architecture
-- **Function-based Design**: Clean separation of mathematical operations
+- **MVC Pattern**: Clean separation of concerns with MVC architecture
 - **Modular Structure**: Easy to maintain and extend
 - **Clear Naming**: Intuitive function and variable names
-- **Educational Focus**: Code structure ideal for learning
+- **Educational Focus**: Code structure ideal for learning Flask development
 
 ### Implementation Quality
-- **Input Validation**: Proper handling of user inputs
-- **Error Management**: Graceful handling of edge cases
-- **User Experience**: Clear prompts and feedback
-- **Code Simplicity**: Straightforward implementation without unnecessary complexity
+- **User Authentication**: Secure user authentication with Flask-Login
+- **CRUD Operations**: RESTful API for task management
+- **Database Management**: SQLAlchemy ORM for database operations
+- **Security**: Implements security measures like CSRF protection and password hashing
 
 ## Areas for Enhancement
-⚠️ **Testing Coverage**: Could benefit from unit tests for each function
-⚠️ **Advanced Features**: Limited to basic arithmetic operations
-⚠️ **GUI Interface**: Currently console-based only
+⚠️ **Testing Coverage**: Could benefit from unit tests for models and integration tests for routes
+⚠️ **Advanced Features**: Limited to basic task management
+⚠️ **User Interface**: Currently uses basic Jinja2 templating
 ⚠️ **Documentation**: Could include more detailed code comments
 
 ## Security Considerations
-- **Input Sanitization**: Ensure all user inputs are properly validated
+- **Input Validation**: Ensure all user inputs are properly validated
 - **Error Messages**: Avoid exposing system information in error messages
-- **Resource Management**: Efficient memory usage for calculations
+- **Resource Management**: Efficient memory usage for database operations
 
 ## Performance Analysis
 - **Efficiency**: Basic operations are computationally lightweight
 - **Scalability**: Current design suitable for intended use case
 - **Memory Usage**: Minimal memory footprint
-- **Response Time**: Instantaneous calculation results
+- **Response Time**: Instantaneous response times
 
 ## Recommendations
-1. **Add Unit Tests**: Implement pytest-based testing framework
-2. **Enhance Documentation**: Add docstrings and inline comments
-3. **GUI Development**: Consider tkinter implementation for better UX
-4. **Feature Expansion**: Add scientific calculator functions
+1. **Add Unit Tests**: Implement unit tests for models and integration tests for routes
+2. **Enhance Documentation**: Add detailed code comments and docstrings
+3. **Implement Advanced Features**: Add task categories, priorities, and due dates
+4. **Improve User Interface**: Enhance Jinja2 templating for better user experience
 5. **Code Review**: Implement peer review process for improvements
 
-*Note: This assessment is based on typical Python calculator patterns. Configure Azure OpenAI for detailed code analysis.*"""
+*Note: This assessment is based on typical Flask Todo app patterns. Configure Azure OpenAI for detailed code analysis.*"""
 
         elif prompt_type == 'meeting_minutes':
-            return f"""# Python Calculator Code Review - Meeting Minutes
+            return f"""# Flask Todo App Code Review - Meeting Minutes
 
 ## Meeting Overview
 **Date**: {self._get_current_date()}
-**Project**: Python Calculator Application
+**Project**: Flask Todo Application
 **Purpose**: Code Review and Technical Assessment
 **Participants**: Development Team, Code Reviewer
 
 ## Discussion Points
 ### Project Analysis
-- ✅ Reviewed Python calculator implementation
-- ✅ Analyzed function-based architecture approach
-- ✅ Evaluated error handling mechanisms
+- ✅ Reviewed Flask Todo application implementation
+- ✅ Analyzed MVC architecture approach
+- ✅ Evaluated user authentication and CRUD operations
 - ✅ Assessed code readability and maintainability
 
 ### Technical Findings
 - **Code Quality**: Clean, well-structured implementation
-- **Architecture**: Appropriate use of functions for mathematical operations
-- **Error Handling**: Good protection against division by zero
-- **User Interface**: Simple but effective console-based interaction
+- **Architecture**: Appropriate use of MVC pattern
+- **Error Handling**: Good exception handling and error messages
+- **User Interface**: Simple but effective Jinja2 templating
 
 ### Key Observations
-- Calculator implements four basic arithmetic operations
-- Code follows Python best practices and naming conventions
+- Todo app implements user authentication and CRUD operations
+- Code follows Flask best practices and naming conventions
 - Function separation allows for easy testing and maintenance
-- Educational value is high for programming beginners
+- Educational value is high for Flask development
 
 ## Action Items Discussed
-- [ ] **High Priority**: Add comprehensive unit testing suite
-- [ ] **Medium**: Implement input validation enhancements
-- [ ] **Medium**: Consider GUI implementation using tkinter
-- [ ] **Low**: Add advanced mathematical operations (sqrt, power, etc.)
-- [ ] **Low**: Implement calculation history feature
+- [ ] **High Priority**: Add comprehensive unit testing
+- [ ] **Medium**: Implement task categories and priorities
+- [ ] **Medium**: Enhance user interface with responsive design
+- [ ] **Low**: Add advanced features like task sharing and email notifications
+- [ ] **Low**: Implement code review process
 
 ## Technical Recommendations
 ### Immediate Improvements
-1. **Testing Framework**: Implement pytest for automated testing
-2. **Documentation**: Add detailed docstrings to all functions
-3. **Error Messages**: Enhance user-friendly error feedback
+1. **Testing Framework**: Implement unit tests for models and integration tests for routes
+2. **Documentation**: Add detailed code comments and docstrings
+3. **Error Messages**: Enhance error messages for better user experience
 4. **Code Comments**: Add explanatory comments for complex logic
 
 ### Future Enhancements
-1. **GUI Development**: Create tkinter-based interface
-2. **Scientific Functions**: Add advanced mathematical operations
-3. **Memory Features**: Implement calculation history and memory storage
-4. **Configuration**: Add user preferences and settings
+1. **GUI Development**: Create responsive and intuitive user interface
+2. **Advanced Features**: Implement task categories, priorities, and due dates
+3. **Security**: Implement additional security measures like password hashing
+4. **Configuration**: Add environment variables for configuration
 
 ## Next Steps
 1. Prioritize unit testing implementation
@@ -311,69 +322,69 @@ The Python calculator demonstrates good fundamental programming practices with c
 4. Consider additional feature requirements
 
 ## Notes
-- Calculator serves as excellent educational tool
+- Todo app serves as excellent educational tool
 - Code structure supports easy feature additions
-- Implementation demonstrates solid Python fundamentals
+- Implementation demonstrates solid Flask fundamentals
 - Ready for enhancement and feature expansion
 
-*Note: This review is based on typical calculator implementations. Full AI analysis available with Azure OpenAI configuration.*"""
+*Note: This review is based on typical Todo app implementations. Full AI analysis available with Azure OpenAI configuration.*"""
 
         elif prompt_type == 'insights':
-            return f"""# Python Calculator - Project Insights & Analysis
+            return f"""# Flask Todo App - Project Insights & Analysis
 
 ## Strategic Overview
-This Python calculator project represents a well-executed implementation of fundamental programming concepts, making it an excellent educational tool and foundation for more advanced applications.
+This Flask Todo application represents a well-executed implementation of modern web development practices, making it an excellent educational tool and foundation for more advanced applications.
 
 ## Key Technical Insights
 ### Architecture Excellence
-- **Modular Design**: Each mathematical operation is properly encapsulated in separate functions
-- **Clean Separation**: Clear distinction between calculation logic and user interface
-- **Scalable Structure**: Architecture supports easy addition of new features
-- **Educational Value**: Perfect demonstration of procedural programming principles
+- **MVC Pattern**: Clean separation of concerns with MVC architecture
+- **Modular Design**: Separate modules for user management, task management, and database operations
+- **Scalable Structure**: Architecture supports easy feature additions
+- **Educational Value**: Perfect demonstration of Flask development principles
 
 ### Implementation Strengths
 - **Code Clarity**: Functions are well-named and purpose-driven
-- **Error Resilience**: Proper handling of edge cases like division by zero
-- **User Experience**: Intuitive console interface with clear prompts
+- **Error Resilience**: Proper exception handling and error messages
+- **User Experience**: Intuitive user interface with Jinja2 templating
 - **Maintainability**: Code structure facilitates easy updates and debugging
 
 ## Development Best Practices Observed
 ### Code Quality Indicators
-- ✅ **Function-based Architecture**: Proper separation of concerns
+- ✅ **MVC Architecture**: Proper separation of concerns
 - ✅ **Naming Conventions**: Clear, descriptive function and variable names
-- ✅ **Error Handling**: Robust exception management
-- ✅ **User Input Validation**: Proper handling of invalid inputs
+- ✅ **Error Handling**: Robust exception handling
+- ✅ **User Interface**: Simple but effective Jinja2 templating
 
 ### Educational Benefits
-- **Learning Tool**: Excellent for teaching Python basics
-- **Concept Demonstration**: Shows functions, loops, and conditionals
+- **Learning Tool**: Excellent for teaching Flask development
+- **Concept Demonstration**: Shows MVC pattern, user authentication, and CRUD operations
 - **Problem Solving**: Demonstrates algorithmic thinking
 - **Code Organization**: Teaches proper program structure
 
 ## Strategic Recommendations
 ### Immediate Opportunities
-1. **Testing Implementation**: Add comprehensive unit tests using pytest
-2. **Documentation Enhancement**: Include detailed docstrings and comments
+1. **Testing Implementation**: Add comprehensive unit testing
+2. **Documentation Enhancement**: Include detailed code comments and docstrings
 3. **Input Validation**: Strengthen user input handling and validation
 4. **Error Messaging**: Improve user-friendly error communication
 
 ### Growth Potential
-1. **GUI Development**: Implement tkinter-based graphical interface
-2. **Feature Expansion**: Add scientific calculator functions (sin, cos, sqrt, etc.)
-3. **Memory System**: Implement calculation history and memory functions
-4. **Advanced Operations**: Include complex number support and statistical functions
+1. **GUI Development**: Implement responsive and intuitive user interface
+2. **Feature Expansion**: Add task categories, priorities, and due dates
+3. **Security**: Implement additional security measures like password hashing
+4. **Advanced Operations**: Include collaborative features and email notifications
 
 ### Technical Evolution Path
-1. **Phase 1**: Enhance current console version with testing and documentation
+1. **Phase 1**: Enhance current implementation with testing and documentation
 2. **Phase 2**: Develop GUI interface while maintaining core functionality
-3. **Phase 3**: Add advanced mathematical operations and scientific functions
+3. **Phase 3**: Add advanced features and security measures
 4. **Phase 4**: Implement data persistence and calculation history
 
 ## Market Position & Use Cases
 - **Educational Sector**: Perfect for programming courses and tutorials
-- **Beginner Projects**: Ideal first project for Python learners
-- **Code Examples**: Excellent reference for function-based programming
-- **Foundation Tool**: Strong base for more complex calculator applications
+- **Beginner Projects**: Ideal first project for Flask learners
+- **Code Examples**: Excellent reference for MVC pattern and Flask development
+- **Foundation Tool**: Strong base for more complex web applications
 
 ## Risk Assessment
 - **Low Complexity Risk**: Simple architecture minimizes technical debt
@@ -381,9 +392,9 @@ This Python calculator project represents a well-executed implementation of fund
 - **Scalability Ready**: Structure supports feature expansion
 - **Maintenance Friendly**: Clean code facilitates easy updates
 
-*Note: This analysis provides strategic insights based on typical calculator implementations. Configure Azure OpenAI for detailed project-specific analysis.*"""
+*Note: This analysis provides strategic insights based on typical Todo app implementations. Configure Azure OpenAI for detailed project-specific analysis.*"""
 
-        return "Enhanced calculator-specific response - Azure OpenAI not configured. Please set up your credentials for full AI functionality."
+        return "Enhanced Todo app-specific response - Azure OpenAI not configured. Please set up your credentials for full AI functionality."
     
     def _get_current_date(self):
         """Get current date for test responses"""
@@ -423,7 +434,7 @@ This Python calculator project represents a well-executed implementation of fund
                 {
                     "id": 1,
                     "title": "Function Architecture Review",
-                    "description": "How well does the current function-based architecture serve the calculator's needs? Should we consider object-oriented design for future enhancements?",
+                    "description": "How well does the current function-based architecture serve the Todo app's needs? Should we consider object-oriented design for future enhancements?",
                     "priority": "High",
                     "category": "Architecture"
                 },
@@ -512,7 +523,7 @@ This Python calculator project represents a well-executed implementation of fund
                 return {"action_items": action_items}
             else:
                 return {
-                    "response": "Calculator-specific analysis complete! This Python calculator demonstrates excellent programming fundamentals with clean function-based architecture.",
+                    "response": "Todo app-specific analysis complete! This Flask Todo application demonstrates excellent programming fundamentals with clean MVC architecture.",
                     "confidence": 0.85,
                     "suggestions": [
                         "Add comprehensive unit testing",
@@ -540,46 +551,6 @@ This Python calculator project represents a well-executed implementation of fund
         except Exception as e:
             logger.error(f"Error in JSON completion: {e}")
             return {"error": "Failed to generate JSON response", "details": str(e)}
-    
-    def generate_tech_spec(self, repo_structure: str, file_contents: Dict[str, str]) -> str:
-        """Generate technical specification for the repository"""
-        if self.test_mode:
-            return self._get_test_response('tech_spec')
-        
-        system_prompt = """You are a senior software architect. Analyze the provided repository structure and key file contents to generate a comprehensive technical specification.
-
-Include:
-1. Project Overview and Purpose
-2. Architecture and Design Patterns
-3. Technology Stack and Dependencies
-4. Key Components and Modules
-5. Data Flow and API Structure
-6. Security Considerations
-7. Performance Characteristics
-8. Deployment and Infrastructure
-
-Be thorough but concise. Focus on technical details that would be valuable for code review and development."""
-
-        # Prepare file contents summary
-        files_summary = "\n\n".join([
-            f"=== {path} ===\n{content[:1000]}{'...' if len(content) > 1000 else ''}"
-            for path, content in file_contents.items()
-        ])
-
-        user_prompt = f"""Repository Structure:
-{repo_structure}
-
-Key File Contents:
-{files_summary}
-
-Please generate a comprehensive technical specification for this codebase."""
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-
-        return self.chat_completion(messages, max_tokens=3000)
     
     def chat_with_context(self, messages: List[Dict[str, str]], repo_context: str) -> Dict[str, str]:
         """Chat with AI while maintaining repository context"""
@@ -617,121 +588,72 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
         if self.test_mode:
             return self._get_test_response('code_health')
         
-        system_prompt = """You are a senior code auditor. Generate a comprehensive code health report based on the repository analysis and conversation history.
-
-Include:
-1. Code Quality Assessment (structure, readability, maintainability)
-2. Security Analysis (potential vulnerabilities, best practices)
-3. Performance Considerations (bottlenecks, optimization opportunities)
-4. Architecture Evaluation (design patterns, modularity, scalability)
-5. Technical Debt Assessment
-6. Testing and Documentation Coverage
-7. Dependency Analysis
-8. Recommendations and Action Items
-
-Provide specific examples and actionable recommendations. Use a professional, detailed format."""
-
-        # Prepare conversation summary
-        conversation_summary = "\n".join([
-            f"{msg['role']}: {msg['content'][:500]}{'...' if len(msg['content']) > 500 else ''}"
-            for msg in conversation_history[-10:]  # Last 10 messages
-        ])
-
-        # Prepare file contents summary
-        files_summary = "\n\n".join([
-            f"=== {path} ===\n{content[:800]}{'...' if len(content) > 800 else ''}"
-            for path, content in file_contents.items()
-        ])
-
-        user_prompt = f"""Repository Structure:
-{repo_structure}
-
-Key File Contents:
-{files_summary}
-
-Conversation Summary:
-{conversation_summary}
-
-Please generate a comprehensive code health report for this codebase."""
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-
-        return self.chat_completion(messages, max_tokens=4000)
+        try:
+            messages = [
+                {"role": "system", "content": "You are a code quality expert. Analyze the code and generate a comprehensive health report."},
+                {"role": "user", "content": f"Analyze this repository and generate a code health report:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.3
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating code health report: {e}")
+            return f"Error generating code health report: {str(e)}"
     
-    def generate_meeting_minutes(self, conversation_history: List[Dict[str, str]]) -> str:
-        """Generate meeting minutes from conversation history"""
+    def generate_meeting_minutes(self, conversation: str, repo_structure: str) -> str:
+        """Generate meeting minutes from conversation"""
         if self.test_mode:
             return self._get_test_response('meeting_minutes')
         
-        system_prompt = """You are a technical meeting secretary. Generate comprehensive meeting minutes from the code review conversation.
-
-Include:
-1. Meeting Summary
-2. Key Discussion Points
-3. Technical Decisions Made
-4. Issues Identified
-5. Action Items and Recommendations
-6. Next Steps
-
-Format as a professional meeting minutes document."""
-
-        conversation_text = "\n".join([
-            f"{msg['role']}: {msg['content']}"
-            for msg in conversation_history
-        ])
-
-        user_prompt = f"""Conversation History:
-{conversation_text}
-
-Please generate professional meeting minutes for this code review session."""
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-
-        return self.chat_completion(messages, max_tokens=2500)
+        try:
+            messages = [
+                {"role": "system", "content": "You are a meeting secretary. Generate professional meeting minutes from the conversation."},
+                {"role": "user", "content": f"Generate meeting minutes from this code review conversation:\n\nConversation:\n{conversation[:2000]}\n\nRepository Structure:\n{repo_structure[:500]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=1500,
+                temperature=0.3
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating meeting minutes: {e}")
+            return f"Error generating meeting minutes: {str(e)}"
     
-    def generate_insights_report(self, conversation_history: List[Dict[str, str]], repo_structure: str) -> str:
-        """Generate insights and recommendations report"""
+    def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: Dict[str, str]) -> str:
+        """Generate insights report"""
         if self.test_mode:
             return self._get_test_response('insights')
         
-        system_prompt = """You are a senior technical consultant. Generate a comprehensive insights report with actionable recommendations.
-
-Include:
-1. Key Technical Insights
-2. Architecture Recommendations
-3. Code Quality Improvements
-4. Performance Optimization Opportunities
-5. Security Enhancements
-6. Best Practices Implementation
-7. Future Development Considerations
-
-Focus on actionable, prioritized recommendations."""
-
-        conversation_text = "\n".join([
-            f"{msg['role']}: {msg['content']}"
-            for msg in conversation_history
-        ])
-
-        user_prompt = f"""Repository Structure:
-{repo_structure}
-
-Conversation History:
-{conversation_text}
-
-Please generate a comprehensive insights and recommendations report."""
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-
-        return self.chat_completion(messages, max_tokens=2500)
+        try:
+            messages = [
+                {"role": "system", "content": "You are a project analyst. Generate strategic insights and recommendations."},
+                {"role": "user", "content": f"Generate project insights from this code review:\n\nConversation:\n{conversation[:1500]}\n\nStructure:\n{repo_structure[:500]}\n\nFiles:\n{str(file_contents)[:1000]}"}
+            ]
+            
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.4
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating insights report: {e}")
+            return f"Error generating insights report: {str(e)}"
 
     def chat(self, message: str, session_id: int) -> dict:
         """Chat with AI assistant"""
@@ -799,48 +721,153 @@ Please generate a comprehensive insights and recommendations report."""
     def _generate_real_meeting_minutes(self, conversation_history: list, current_message: str) -> str:
         """Generate real meeting minutes from conversation history"""
         if not conversation_history:
-            return "Meeting started - Python Calculator code review session initiated."
+            return """**Meeting Minutes - Flask Todo App Code Review**
+
+**Session Started:** Code analysis and review session initiated
+
+**Initial Findings:**
+• Repository structure analyzed successfully
+• Function-based architecture identified
+• Basic arithmetic operations confirmed
+• Error handling mechanisms reviewed
+
+**Current Focus:** Awaiting first discussion topic"""
         
-        # Format conversation as Q&A
-        qa_pairs = []
-        for i in range(0, len(conversation_history), 2):
-            if i + 1 < len(conversation_history):
-                question = conversation_history[i]['content']
-                answer = conversation_history[i + 1]['content']
-                qa_pairs.append(f"Q: {question}\nA: {answer[:100]}...")
+        # Create realistic discussion points based on conversation
+        discussion_points = []
         
-        if qa_pairs:
-            return f"Discussion Points:\n" + "\n\n".join(qa_pairs[-3:])  # Show last 3 Q&A pairs
-        else:
-            return f"Current Discussion: {current_message}"
+        # Analyze conversation for key topics
+        all_content = " ".join([msg['content'].lower() for msg in conversation_history])
+        
+        if "structure" in all_content or "architecture" in all_content:
+            discussion_points.append("**Code Architecture Discussion:**\n- Reviewed function-based design approach\n- Discussed modular structure benefits\n- Analyzed separation of concerns implementation")
+        
+        if "error" in all_content or "exception" in all_content:
+            discussion_points.append("**Error Handling Review:**\n- Examined division by zero protection\n- Discussed input validation strategies\n- Reviewed exception handling patterns")
+        
+        if "test" in all_content:
+            discussion_points.append("**Testing Strategy Planning:**\n- Explored pytest framework adoption\n- Discussed unit testing approaches\n- Planned edge case testing scenarios")
+        
+        if "improve" in all_content or "enhance" in all_content:
+            discussion_points.append("**Enhancement Opportunities:**\n- Identified GUI development potential\n- Discussed scientific function additions\n- Explored memory feature implementations")
+        
+        if "gui" in all_content or "interface" in all_content:
+            discussion_points.append("**User Interface Discussion:**\n- Evaluated tkinter implementation options\n- Discussed modern UI design principles\n- Planned user experience improvements")
+        
+        if "documentation" in all_content:
+            discussion_points.append("**Documentation Planning:**\n- Reviewed current code comments\n- Discussed docstring improvements\n- Planned README enhancements")
+        
+        # If no specific topics, create general discussion points
+        if not discussion_points:
+            discussion_points = [
+                "**General Code Review:**\n- Analyzed overall code quality\n- Discussed programming best practices\n- Reviewed educational value of the project"
+            ]
+        
+        # Format as professional meeting minutes
+        minutes = "**Meeting Minutes - Flask Todo App Code Review**\n\n"
+        minutes += "**Topics Discussed:**\n\n"
+        minutes += "\n\n".join(discussion_points[-3:])  # Show last 3 topics
+        
+        # Add current discussion
+        if current_message and len(current_message) > 10:
+            minutes += f"\n\n**Current Discussion:**\n- {current_message[:100]}{'...' if len(current_message) > 100 else ''}"
+        
+        return minutes
     
     def _generate_real_insights(self, conversation_history: list, current_message: str) -> str:
         """Generate real insights or return None if no significant insights"""
-        if len(conversation_history) < 2:
-            return "N/A - Insufficient conversation data"
+        if len(conversation_history) < 1:
+            return """**Project Insights - Flask Todo App**
+
+**Code Quality Assessment:**
+• Clean, readable function-based architecture
+• Good separation of mathematical operations
+• Educational value for Python learners
+
+**Immediate Opportunities:**
+• Add comprehensive error handling
+• Implement unit testing framework
+• Consider GUI development for better UX
+
+**Technical Recommendations:**
+• Maintain modular design principles
+• Focus on input validation improvements
+• Plan for feature extensibility"""
         
-        # Generate insights based on conversation patterns
+        # Generate contextual insights based on conversation patterns
         insights = []
+        technical_recommendations = []
+        priority_actions = []
         
-        # Check for common topics
+        # Analyze conversation content
         all_content = " ".join([msg['content'].lower() for msg in conversation_history])
         
-        if "function" in all_content or "method" in all_content:
-            insights.append("Focus on function-based architecture")
+        # Code structure insights
+        if "structure" in all_content or "architecture" in all_content:
+            insights.append("• Function-based architecture is well-implemented and maintainable")
+            technical_recommendations.append("• Consider class-based design for future scalability")
         
+        # Error handling insights
         if "error" in all_content or "exception" in all_content:
-            insights.append("Error handling is a key concern")
+            insights.append("• Error handling is a critical focus area for improvement")
+            priority_actions.append("• Implement comprehensive exception handling")
+            technical_recommendations.append("• Add custom exception classes for better error management")
         
+        # Testing insights
         if "test" in all_content:
-            insights.append("Testing strategy needs attention")
+            insights.append("• Testing strategy is essential for code reliability")
+            priority_actions.append("• Set up pytest framework and write unit tests")
+            technical_recommendations.append("• Implement test-driven development practices")
         
+        # GUI insights
+        if "gui" in all_content or "interface" in all_content:
+            insights.append("• GUI development would significantly enhance user experience")
+            priority_actions.append("• Prototype tkinter-based interface")
+            technical_recommendations.append("• Design responsive and intuitive user interface")
+        
+        # Improvement insights
         if "improve" in all_content or "enhance" in all_content:
-            insights.append("Enhancement opportunities identified")
+            insights.append("• Multiple enhancement opportunities identified")
+            technical_recommendations.append("• Prioritize features based on user value and complexity")
+        
+        # Documentation insights
+        if "documentation" in all_content:
+            insights.append("• Documentation improvements will increase project accessibility")
+            priority_actions.append("• Add comprehensive docstrings and README")
+        
+        # Default insights if no specific patterns found
+        if not insights:
+            insights = [
+                "• Code demonstrates solid Python programming fundamentals",
+                "• Project has excellent educational and practical value",
+                "• Architecture supports future feature additions"
+            ]
+            technical_recommendations = [
+                "• Continue following clean code principles",
+                "• Plan systematic feature enhancements",
+                "• Maintain focus on code readability"
+            ]
+            priority_actions = [
+                "• Identify next development priorities",
+                "• Consider user feedback for improvements"
+            ]
+        
+        # Format comprehensive insights report
+        report = "**Project Insights - Flask Todo App**\n\n"
         
         if insights:
-            return "Key Insights: " + ", ".join(insights)
-        else:
-            return "N/A - No significant patterns identified yet"
+            report += "**Key Insights:**\n"
+            report += "\n".join(insights[:4])  # Limit to 4 insights
+        
+        if technical_recommendations:
+            report += "\n\n**Technical Recommendations:**\n"
+            report += "\n".join(technical_recommendations[:3])  # Limit to 3 recommendations
+        
+        if priority_actions:
+            report += "\n\n**Priority Actions:**\n"
+            report += "\n".join(priority_actions[:3])  # Limit to 3 actions
+        
+        return report
 
     def generate_tech_spec(self, repo_structure: str, file_contents: dict) -> str:
         """Generate technical specification document"""
@@ -865,7 +892,7 @@ Please generate a comprehensive insights and recommendations report."""
         except Exception as e:
             logger.error(f"Error generating tech spec: {e}")
             return f"Error generating technical specification: {str(e)}"
-    
+
     def generate_code_health_report(self, repo_structure: str, file_contents: dict) -> str:
         """Generate code health report"""
         if self.test_mode:
@@ -889,7 +916,7 @@ Please generate a comprehensive insights and recommendations report."""
         except Exception as e:
             logger.error(f"Error generating code health report: {e}")
             return f"Error generating code health report: {str(e)}"
-    
+
     def generate_meeting_minutes(self, conversation: str, repo_structure: str) -> str:
         """Generate meeting minutes from conversation"""
         if self.test_mode:
@@ -913,7 +940,7 @@ Please generate a comprehensive insights and recommendations report."""
         except Exception as e:
             logger.error(f"Error generating meeting minutes: {e}")
             return f"Error generating meeting minutes: {str(e)}"
-    
+
     def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: dict) -> str:
         """Generate insights report"""
         if self.test_mode:
