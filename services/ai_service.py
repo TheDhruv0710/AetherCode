@@ -2,10 +2,41 @@ import os
 import json
 import logging
 from typing import List, Dict, Any, Optional
-from openai import AzureOpenAI
-import openai
+from langchain_openai import AzureChatOpenAI
+from langchain.prompts import PromptTemplate
 
 logger = logging.getLogger(__name__)
+
+class GenAi:
+    def __init__(self, link_data):
+        model_name = os.getenv("model_name")
+        deployment_name = os.getenv("deployment_name")
+        print(link_data)
+
+        os.environ['OPENAI_API_TYPE'] = os.getenv("api_type")
+        os.environ['AZURE_OPENAI_ENDPOINT'] = os.getenv("api_base")
+        os.environ['OPENAI_API_KEY'] = os.getenv("api_key")
+        os.environ['OPENAI_API_VERSION'] = os.getenv("api_version")
+        self.model = AzureChatOpenAI(
+            deployment_name=deployment_name,
+            model_name=model_name
+        )
+        self.link_data = link_data
+        print(f"prompt_template: {os.getenv('prompt_template')}")
+        self.prompt_template = PromptTemplate(
+            input_variables=["link_data"],
+            template=os.getenv("prompt_template"),
+        )
+
+        self.chain = self.prompt_template | self.model
+
+    def generate_response(self, message):
+        prompt_input = {
+            "link_data": self.link_data,
+            "message": message
+        }
+        response = self.chain.invoke(prompt_input)
+        return response.content
 
 class AzureOpenAIService:
     def __init__(self):
@@ -14,107 +45,49 @@ class AzureOpenAIService:
         self.test_mode = False
         
         try:
-            # Log openai library version for debugging
-            logger.info(f"OpenAI library version: {openai.__version__}")
-            
             # Check if required environment variables are set
-            api_key = os.getenv('AZURE_OPENAI_API_KEY')
-            endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
-            deployment = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')
+            api_key = os.getenv('api_key')
+            endpoint = os.getenv('api_base')
+            deployment = os.getenv('deployment_name')
             
             # Debug logging to see what values are being read
-            logger.info(f"Azure OpenAI API Key present: {'Yes' if api_key and len(api_key) > 10 else 'No'}")
-            logger.info(f"Azure OpenAI Endpoint: {endpoint}")
-            logger.info(f"Azure OpenAI Deployment: {deployment}")
+            logger.info(f"API Key configured: {bool(api_key and api_key not in ['your_api_key_here', 'your-api-key-here', ''])}")
+            logger.info(f"Endpoint configured: {bool(endpoint and endpoint not in ['https://your-resource.openai.azure.com/', 'https://your-resource-name.openai.azure.com/', ''])}")
+            logger.info(f"Deployment configured: {bool(deployment and deployment not in ['gpt-4', 'your-deployment-name', ''])}")
             
-            # Check for placeholder values or missing values
-            if not api_key or api_key in ['your_api_key_here', 'your-api-key-here', '']:
-                logger.warning("Azure OpenAI API key not configured or is placeholder. Running in test mode.")
-                self.test_mode = True
-                return
-                
-            if not endpoint or endpoint in ['https://your-resource.openai.azure.com/', 'https://your-resource-name.openai.azure.com/', '']:
-                logger.warning("Azure OpenAI endpoint not configured or is placeholder. Running in test mode.")
-                self.test_mode = True
-                return
-                
-            if not deployment or deployment in ['gpt-4', 'your-deployment-name', '']:
-                logger.warning("Azure OpenAI deployment not configured or is placeholder. Running in test mode.")
+            if not all([api_key, endpoint, deployment]):
+                logger.warning("Missing required environment variables for Azure OpenAI")
+                logger.warning("Running in test mode with scripted responses")
                 self.test_mode = True
                 return
             
-            # Try to initialize the client
-            try:
-                self.client = AzureOpenAI(
-                    api_key=api_key,
-                    api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
-                    azure_endpoint=endpoint
-                )
-                self.deployment_name = deployment
-                logger.info("Azure OpenAI client initialized successfully")
-                
-            except TypeError as init_error:
-                logger.error(f"Azure OpenAI client initialization failed with TypeError: {init_error}")
-                logger.info("Trying alternative initialization method...")
-                
-                # Try alternative initialization for older versions
-                try:
-                    self.client = AzureOpenAI(
-                        api_key=api_key,
-                        api_version=os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview'),
-                        base_url=f"{endpoint.rstrip('/')}/openai/deployments/{deployment}"
-                    )
-                    self.deployment_name = deployment
-                    logger.info("Azure OpenAI client initialized with alternative method")
-                    
-                except Exception as alt_error:
-                    logger.error(f"Alternative initialization also failed: {alt_error}")
-                    logger.warning("Falling back to test mode due to client initialization failure")
-                    self.test_mode = True
-                    return
-            
-            except Exception as init_error:
-                logger.error(f"Azure OpenAI client initialization failed: {init_error}")
-                logger.warning("Falling back to test mode due to client initialization failure")
-                self.test_mode = True
-                return
-            
-            # Test the connection with a simple call
-            try:
-                test_response = self.client.chat.completions.create(
-                    model=self.deployment_name,
-                    messages=[{"role": "user", "content": "Hello"}],
-                    max_tokens=10
-                )
-                logger.info("Azure OpenAI service initialized and tested successfully")
-                self.test_mode = False
-                
-            except Exception as test_error:
-                logger.error(f"Azure OpenAI connection test failed: {test_error}")
-                logger.warning("Falling back to test mode due to connection test failure")
-                self.test_mode = True
-                self.client = None
+            # Initialize GenAI with repository context
+            self.genai = GenAi(link_data="Flask Todo Application Repository")
+            logger.info("GenAI service initialized successfully")
+            self.test_mode = False
             
         except Exception as e:
-            logger.error(f"Failed to initialize Azure OpenAI service: {e}")
+            logger.error(f"Failed to initialize GenAI service: {e}")
             logger.warning("Running in test mode due to initialization error")
             self.test_mode = True
     
-    def _get_test_response(self, prompt_type: str, context: str = "") -> str:
+    def _get_test_response(self, prompt_type: str, context: str = "", session_id: int = 0) -> str:
         """Generate scripted test responses that follow a demo flow"""
         if prompt_type == 'chat':
-            # Get or initialize conversation state for this context
+            # Get or initialize conversation state for this session
             if not hasattr(self, '_conversation_state'):
                 self._conversation_state = {}
             
-            # Use a simple hash of context to track conversation state
-            context_key = hash(context.lower().strip()) % 1000
+            # Use session_id to track conversation state
+            if session_id not in self._conversation_state:
+                self._conversation_state[session_id] = {'step': 0, 'used_responses': set()}
             
-            if context_key not in self._conversation_state:
-                self._conversation_state[context_key] = {'step': 0, 'used_responses': set()}
-            
-            state = self._conversation_state[context_key]
+            state = self._conversation_state[session_id]
             context_lower = context.lower()
+            
+            # Debug logging
+            logger.info(f"Chat context received: '{context}' (session_id: {session_id})")
+            logger.info(f"Current conversation state: {state}")
             
             # Scripted conversation flow for Flask Todo App demo
             demo_script = [
@@ -172,13 +145,19 @@ class AzureOpenAIService:
             
             # Find matching response based on current step and triggers
             for i, script_item in enumerate(demo_script):
+                logger.info(f"Checking step {i} triggers: {script_item['triggers']} against context: '{context_lower}'")
                 if any(trigger in context_lower for trigger in script_item['triggers']):
                     response_key = f"step_{i}"
+                    logger.info(f"Trigger matched! Response key: {response_key}, Used responses: {state['used_responses']}")
                     if response_key not in state['used_responses']:
                         state['used_responses'].add(response_key)
                         state['step'] = i + 1
+                        logger.info(f"Returning scripted response for step {i}")
                         return script_item['response']
+                    else:
+                        logger.info(f"Response {response_key} already used, skipping")
             
+            logger.info(f"No triggers matched, returning fallback guidance for step {state['step']}")
             # If no specific trigger found, provide contextual guidance
             if state['step'] == 0:
                 return "Hello! I'm ready to analyze this Flask Todo application. To get started, try asking me to 'analyze' the application or tell me about its 'structure' and 'architecture'."
@@ -423,29 +402,23 @@ This Flask Todo application represents a well-executed implementation of modern 
         from datetime import datetime
         return datetime.now().strftime("%Y-%m-%d")
     
-    def chat_completion(self, messages: List[Dict[str, str]], max_tokens: int = 1000) -> str:
-        """Get chat completion from Azure OpenAI"""
+    def chat_completion(self, messages: List[Dict[str, str]], max_tokens: int = 1000, session_id: int = 0) -> str:
+        """Get chat completion from GenAI"""
         if self.test_mode:
             # Extract context from messages for more relevant responses
             user_messages = [msg['content'] for msg in messages if msg['role'] == 'user']
             context = ' '.join(user_messages[-3:])  # Last 3 user messages for context
-            return self._get_test_response('chat', context)
+            return self._get_test_response('chat', context, session_id)
             
         try:
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=max_tokens,
-                temperature=0.7
-            )
-            return response.choices[0].message.content
+            return self.genai.generate_response(messages[-1]['content'])
             
         except Exception as e:
             logger.error(f"Error in chat completion: {e}")
             return f"Error: {str(e)}"
     
-    def json_completion(self, messages: List[Dict[str, str]], max_tokens: int = 1500) -> Dict[str, Any]:
-        """Get JSON completion from Azure OpenAI"""
+    def json_completion(self, messages: List[Dict[str, str]], max_tokens: int = 1500, session_id: int = 0) -> Dict[str, Any]:
+        """Get JSON completion from GenAI"""
         if self.test_mode:
             # Extract user messages for context
             user_messages = [msg['content'] for msg in messages if msg['role'] == 'user']
@@ -556,29 +529,17 @@ This Flask Todo application represents a well-executed implementation of modern 
                 }
         
         try:
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=max_tokens,
-                temperature=0.7
-            )
-            
-            # Try to parse the response as JSON
-            import json
-            try:
-                return json.loads(response.choices[0].message.content)
-            except json.JSONDecodeError:
-                return {"response": response.choices[0].message.content}
+            return self.genai.generate_response(messages[-1]['content'])
                 
         except Exception as e:
             logger.error(f"Error in JSON completion: {e}")
             return {"error": "Failed to generate JSON response", "details": str(e)}
     
-    def chat_with_context(self, messages: List[Dict[str, str]], repo_context: str) -> Dict[str, str]:
-        """Chat with AI while maintaining repository context"""
+    def chat_with_context(self, messages: List[Dict[str, str]], repo_context: str, session_id: int = 0) -> Dict[str, str]:
+        """Chat with GenAI while maintaining repository context"""
         if self.test_mode:
             return {
-                "response": self._get_test_response('chat'),
+                "response": self._get_test_response('chat', session_id=session_id),
                 "mom_update": "Test meeting minutes update",
                 "insights_update": "Test insights update"
             }
@@ -603,82 +564,10 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
         # Add system prompt to the beginning of messages
         full_messages = [{"role": "system", "content": system_prompt}] + messages
 
-        return self.json_completion(full_messages)
+        return self.json_completion(full_messages, session_id=session_id)
     
-    def generate_code_health_report(self, repo_structure: str, file_contents: Dict[str, str], conversation_history: List[Dict[str, str]]) -> str:
-        """Generate comprehensive code health report"""
-        if self.test_mode:
-            return self._get_test_response('code_health')
-        
-        try:
-            messages = [
-                {"role": "system", "content": "You are a code quality expert. Analyze the code and generate a comprehensive health report."},
-                {"role": "user", "content": f"Analyze this repository and generate a code health report:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
-            ]
-            
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.3
-            )
-            
-            return response.choices[0].message.content
-            
-        except Exception as e:
-            logger.error(f"Error generating code health report: {e}")
-            return f"Error generating code health report: {str(e)}"
-
-    def generate_meeting_minutes(self, conversation: str, repo_structure: str) -> str:
-        """Generate meeting minutes from conversation"""
-        if self.test_mode:
-            return self._get_test_response('meeting_minutes')
-        
-        try:
-            messages = [
-                {"role": "system", "content": "You are a meeting secretary. Generate professional meeting minutes from the conversation."},
-                {"role": "user", "content": f"Generate meeting minutes from this code review conversation:\n\nConversation:\n{conversation[:2000]}\n\nRepository Structure:\n{repo_structure[:500]}"}
-            ]
-            
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=1500,
-                temperature=0.3
-            )
-            
-            return response.choices[0].message.content
-            
-        except Exception as e:
-            logger.error(f"Error generating meeting minutes: {e}")
-            return f"Error generating meeting minutes: {str(e)}"
-
-    def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: Dict[str, str]) -> str:
-        """Generate insights report"""
-        if self.test_mode:
-            return self._get_test_response('insights')
-        
-        try:
-            messages = [
-                {"role": "system", "content": "You are a project analyst. Generate strategic insights and recommendations."},
-                {"role": "user", "content": f"Generate project insights from this code review:\n\nConversation:\n{conversation[:1500]}\n\nStructure:\n{repo_structure[:500]}\n\nFiles:\n{str(file_contents)[:1000]}"}
-            ]
-            
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.4
-            )
-            
-            return response.choices[0].message.content
-            
-        except Exception as e:
-            logger.error(f"Error generating insights report: {e}")
-            return f"Error generating insights report: {str(e)}"
-
-    def chat(self, message: str, session_id: int) -> dict:
-        """Chat with AI assistant"""
+    def chat(self, message: str, session_id: int = 0) -> dict:
+        """Chat with GenAI assistant"""
         if self.test_mode:
             # Simulate thinking time for realistic feel
             import time
@@ -689,13 +578,11 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
             messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
             conversation_history = [{"role": msg.role, "content": msg.content} for msg in messages]
             
-            # Generate contextual response
-            response = self._get_test_response('chat', message)
+            # Generate contextual response using session-based state tracking
+            response = self._get_test_response('chat', message, session_id)
             
-            # Generate real meeting minutes from conversation
+            # Generate real meeting minutes and insights from conversation history
             mom_content = self._generate_real_meeting_minutes(conversation_history, message)
-            
-            # Generate real action items or set to None
             insights_content = self._generate_real_insights(conversation_history, message)
             
             return {
@@ -705,33 +592,8 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
             }
         
         try:
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=[
-                    {"role": "system", "content": "You are a helpful AI code reviewer assistant."},
-                    {"role": "user", "content": message}
-                ],
-                max_tokens=500,
-                temperature=0.7
-            )
-            
-            # Extract discussion points and action items from response
-            discussion_points = []
-            action_items = []
-            for line in response.choices[0].message.content.split('\n'):
-                if line.startswith('Discussion Point:'):
-                    discussion_points.append(line[17:])
-                elif line.startswith('Action Item:'):
-                    action_items.append(line[12:])
-            
-            return {
-                "response": response.choices[0].message.content,
-                "mom_update": f"Discussed: {message[:50]}...",
-                "insights_update": f"Insight: {', '.join(discussion_points)}",
-                "discussion_points": discussion_points,
-                "action_items": action_items
-            }
-            
+            return self.genai.generate_response(message)
+                
         except Exception as e:
             logger.error(f"Error in chat: {e}")
             return {
@@ -741,7 +603,7 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
             }
     
     def _generate_real_meeting_minutes(self, conversation_history: list, current_message: str) -> str:
-        """Generate real meeting minutes from conversation history"""
+        """Generate real meeting minutes from conversation"""
         if not conversation_history:
             return """**Meeting Minutes - Flask Todo App Code Review**
 
@@ -891,10 +753,10 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
         
         return report
 
-    def generate_tech_spec(self, repo_structure: str, file_contents: dict) -> str:
+    def generate_tech_spec(self, repo_structure: str, file_contents: dict, session_id: int = 0) -> str:
         """Generate technical specification document"""
         if self.test_mode:
-            return self._get_test_response('tech_spec')
+            return self._get_test_response('tech_spec', session_id=session_id)
         
         try:
             messages = [
@@ -902,23 +764,16 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Generate a technical specification for this repository:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
             ]
             
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.3
-            )
-            
-            return response.choices[0].message.content
-            
+            return self.genai.generate_response(messages[-1]['content'])
+                
         except Exception as e:
             logger.error(f"Error generating tech spec: {e}")
             return f"Error generating technical specification: {str(e)}"
 
-    def generate_code_health_report(self, repo_structure: str, file_contents: dict) -> str:
+    def generate_code_health_report(self, repo_structure: str, file_contents: dict, session_id: int = 0) -> str:
         """Generate code health report"""
         if self.test_mode:
-            return self._get_test_response('code_health')
+            return self._get_test_response('code_health', session_id=session_id)
         
         try:
             messages = [
@@ -926,23 +781,16 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Analyze this repository and generate a code health report:\n\nStructure:\n{repo_structure}\n\nKey Files:\n{str(file_contents)[:2000]}"}
             ]
             
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.3
-            )
-            
-            return response.choices[0].message.content
-            
+            return self.genai.generate_response(messages[-1]['content'])
+                
         except Exception as e:
             logger.error(f"Error generating code health report: {e}")
             return f"Error generating code health report: {str(e)}"
 
-    def generate_meeting_minutes(self, conversation: str, repo_structure: str) -> str:
+    def generate_meeting_minutes(self, conversation: str, repo_structure: str, session_id: int = 0) -> str:
         """Generate meeting minutes from conversation"""
         if self.test_mode:
-            return self._get_test_response('meeting_minutes')
+            return self._get_test_response('meeting_minutes', session_id=session_id)
         
         try:
             messages = [
@@ -950,23 +798,16 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Generate meeting minutes from this code review conversation:\n\nConversation:\n{conversation[:2000]}\n\nRepository Structure:\n{repo_structure[:500]}"}
             ]
             
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=1500,
-                temperature=0.3
-            )
-            
-            return response.choices[0].message.content
-            
+            return self.genai.generate_response(messages[-1]['content'])
+                
         except Exception as e:
             logger.error(f"Error generating meeting minutes: {e}")
             return f"Error generating meeting minutes: {str(e)}"
 
-    def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: dict) -> str:
+    def generate_insights_report(self, conversation: str, repo_structure: str, file_contents: dict, session_id: int = 0) -> str:
         """Generate insights report"""
         if self.test_mode:
-            return self._get_test_response('insights')
+            return self._get_test_response('insights', session_id=session_id)
         
         try:
             messages = [
@@ -974,15 +815,8 @@ Respond in JSON format with keys: 'response', 'mom_update', 'insights_update'.""
                 {"role": "user", "content": f"Generate project insights from this code review:\n\nConversation:\n{conversation[:1500]}\n\nStructure:\n{repo_structure[:500]}\n\nFiles:\n{str(file_contents)[:1000]}"}
             ]
             
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.4
-            )
-            
-            return response.choices[0].message.content
-            
+            return self.genai.generate_response(messages[-1]['content'])
+                
         except Exception as e:
             logger.error(f"Error generating insights report: {e}")
             return f"Error generating insights report: {str(e)}"

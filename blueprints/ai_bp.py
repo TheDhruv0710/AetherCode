@@ -58,8 +58,8 @@ def chat_with_ai():
             except Exception as e:
                 logger.warning(f"Could not get repository summary: {e}")
         
-        # Get AI response with context
-        ai_response_data = ai_service.chat_with_context(conversation_history, repo_context)
+        # Get AI response with session-based state tracking
+        ai_response_data = ai_service.chat(user_message, session_id=project_id)
         
         ai_response = ai_response_data.get('response', 'I apologize, but I encountered an error processing your request.')
         mom_update = ai_response_data.get('mom_update', '')
@@ -228,7 +228,7 @@ def regenerate_tech_spec(project_id):
         key_files = repo_service.get_key_files(session.repo_local_path)
         
         # Generate new technical specification
-        tech_spec = ai_service.generate_tech_spec(repo_summary, key_files)
+        tech_spec = ai_service.generate_tech_spec(repo_summary, key_files, session_id=project_id)
         
         # Update session
         session.tech_spec = tech_spec
@@ -313,22 +313,22 @@ def download_report(session_id, report_type):
         
         # Generate report content based on type
         if report_type == 'tech_spec':
-            content = ai_service.generate_tech_spec(repo_info.get('structure', ''), file_contents)
+            content = ai_service.generate_tech_spec(repo_info.get('structure', ''), file_contents, session_id=session_id)
             filename = f"Technical_Specification_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         elif report_type == 'code_health':
-            content = ai_service.generate_code_health_report(repo_info.get('structure', ''), file_contents)
+            content = ai_service.generate_code_health_report(repo_info.get('structure', ''), file_contents, session_id=session_id)
             filename = f"Code_Health_Report_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         elif report_type == 'meeting_minutes':
             # Get conversation history
             messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
             conversation = "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
-            content = ai_service.generate_meeting_minutes(conversation, repo_info.get('structure', ''))
+            content = ai_service.generate_meeting_minutes(conversation, repo_info.get('structure', ''), session_id=session_id)
             filename = f"Meeting_Minutes_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         elif report_type == 'insights':
             # Get conversation history
             messages = Message.query.filter_by(session_id=session_id).order_by(Message.timestamp).all()
             conversation = "\n".join([f"{msg.role}: {msg.content}" for msg in messages])
-            content = ai_service.generate_insights_report(conversation, repo_info.get('structure', ''), file_contents)
+            content = ai_service.generate_insights_report(conversation, repo_info.get('structure', ''), file_contents, session_id=session_id)
             filename = f"Project_Insights_{session.repo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         
         # Create temporary file
@@ -384,10 +384,10 @@ def export_all_reports(session_id):
         
         # Generate all reports
         reports = {
-            'Technical_Specification.md': ai_service.generate_tech_spec(repo_info.get('structure', ''), file_contents),
-            'Code_Health_Report.md': ai_service.generate_code_health_report(repo_info.get('structure', ''), file_contents),
-            'Meeting_Minutes.md': ai_service.generate_meeting_minutes(conversation, repo_info.get('structure', '')),
-            'Project_Insights.md': ai_service.generate_insights_report(conversation, repo_info.get('structure', ''), file_contents)
+            'Technical_Specification.md': ai_service.generate_tech_spec(repo_info.get('structure', ''), file_contents, session_id=session_id),
+            'Code_Health_Report.md': ai_service.generate_code_health_report(repo_info.get('structure', ''), file_contents, session_id=session_id),
+            'Meeting_Minutes.md': ai_service.generate_meeting_minutes(conversation, repo_info.get('structure', ''), session_id=session_id),
+            'Project_Insights.md': ai_service.generate_insights_report(conversation, repo_info.get('structure', ''), file_contents, session_id=session_id)
         }
         
         # Create temporary directory and ZIP file
