@@ -23,6 +23,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveMinutes = document.getElementById('live-minutes');
     const todoList = document.getElementById('todo-list');
 
+    // --- CodeMirror Initialization ---
+    let codeEditor = null;
+    
+    // Initialize CodeMirror after DOM is loaded
+    setTimeout(() => {
+        const textarea = document.getElementById('code-editor');
+        if (textarea) {
+            codeEditor = CodeMirror.fromTextArea(textarea, {
+                lineNumbers: true,
+                mode: 'javascript',
+                theme: 'material-darker',
+                readOnly: true,
+                lineWrapping: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
+            });
+            codeEditor.setSize("100%", "100%");
+        }
+    }, 100);
+
     // --- State ---
     let currentProjectId = null;
     let currentRepoUrl = null;
@@ -133,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            showCode(data.content);
+            showCode(data.content, path);
 
         } catch (error) {
             console.error('Error loading file:', error);
@@ -340,8 +360,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showCode(codeSnippet) {
-        codeViewer.innerHTML = `<pre><code>${codeSnippet}</code></pre>`;
+    function showCode(codeSnippet, filePath = '') {
+        if (codeEditor) {
+            // Detect file type and set appropriate mode
+            const mode = getCodeMirrorMode(filePath);
+            codeEditor.setOption('mode', mode);
+            codeEditor.setValue(codeSnippet);
+            codeEditor.refresh();
+        } else {
+            // Fallback if CodeMirror isn't initialized yet
+            codeViewer.innerHTML = `<pre><code>${codeSnippet}</code></pre>`;
+        }
+    }
+
+    function getCodeMirrorMode(filePath) {
+        const extension = filePath.split('.').pop().toLowerCase();
+        
+        const modeMap = {
+            'js': 'javascript',
+            'jsx': 'javascript',
+            'ts': 'javascript',
+            'tsx': 'javascript',
+            'py': 'python',
+            'html': 'htmlmixed',
+            'htm': 'htmlmixed',
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css',
+            'json': 'javascript',
+            'xml': 'xml',
+            'yaml': 'yaml',
+            'yml': 'yaml',
+            'md': 'markdown',
+            'markdown': 'markdown',
+            'sh': 'shell',
+            'bash': 'shell',
+            'zsh': 'shell',
+            'fish': 'shell',
+            'txt': 'text',
+            'log': 'text',
+            'cfg': 'text',
+            'conf': 'text',
+            'ini': 'text'
+        };
+        
+        return modeMap[extension] || 'text';
     }
 
     function setLoading(button, text, isLoading = true) {
